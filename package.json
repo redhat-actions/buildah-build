@@ -1,12 +1,24 @@
 {
   "name": "buildah-action",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "compile": "tsc -p .",
+    "bundle": "ncc build src/index.ts --source-map --minify",
+    "clean": "rm -rf out/ dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "Red Hat",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.0.4",
+    "@actions/io": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.7",
+    "typescript": "^4.0.5"
+  }
 }

@@ -1,0 +1,25 @@
+name: 'Test Action'
+description: 'This action allows you to build an image from your app'
+author: 'Luca'
+branding:
+  icon: circle
+  color: red
+inputs:
+  new-image-name:
+    description: 'Name of the new image that will be created'
+    required: true
+  base-image:
+    description: 'Base image to use'
+    required: false
+  content:
+    description: 'The content to copy inside the base image'
+    required: true
+  entrypoint:
+    description: 'Entrypoint'
+    required: true
+  port:
+    description: 'Port'
+    required: false  
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
