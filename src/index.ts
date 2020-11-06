@@ -16,7 +16,7 @@ export async function run(): Promise<void> {
     const newImageName = core.getInput('new-image-name');
     const runnerOS = process.env.RUNNER_OS;
 
-    if (runnerOS !== 'linux') {
+    if (runnerOS !== 'Linux') {
         throw new Error(`Only supported on linux platform`);
     }
     // get buildah cli
