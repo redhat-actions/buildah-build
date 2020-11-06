@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BuildahCli = void 0;
+const core = require("@actions/core");
 const exec = require("@actions/exec");
 class BuildahCli {
     constructor(executable) {
@@ -25,6 +26,9 @@ class BuildahCli {
     }
     copy(container, content, path) {
         return __awaiter(this, void 0, void 0, function* () {
+            core.debug('copy');
+            core.debug(container);
+            core.debug(content);
             const args = ["copy", container, content];
             if (path) {
                 args.push(path);
@@ -34,6 +38,8 @@ class BuildahCli {
     }
     config(container, settings) {
         return __awaiter(this, void 0, void 0, function* () {
+            core.debug('config');
+            core.debug(container);
             const args = ['config'];
             if (settings.entrypoint) {
                 args.push('--entrypoint');
@@ -49,6 +55,9 @@ class BuildahCli {
     }
     commit(container, newImageName, flags = []) {
         return __awaiter(this, void 0, void 0, function* () {
+            core.debug('commit');
+            core.debug(container);
+            core.debug(newImageName);
             const args = ["commit", ...flags, container, newImageName];
             return yield this.execute(args);
         });

@@ -38,7 +38,7 @@ function run() {
         if (creationResult.succeeded === false) {
             return Promise.reject(new Error(creationResult.reason));
         }
-        const containerId = creationResult.output;
+        const containerId = creationResult.output.replace('\n', '');
         const copyResult = yield cli.copy(containerId, content);
         if (copyResult.succeeded === false) {
             return Promise.reject(new Error(copyResult.reason));

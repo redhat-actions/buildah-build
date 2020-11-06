@@ -28,7 +28,7 @@ export async function run(): Promise<void> {
     if (creationResult.succeeded === false) {
         return Promise.reject(new Error(creationResult.reason));
     }
-    const containerId = creationResult.output;
+    const containerId = creationResult.output.replace('\n', '');
 
     const copyResult = await cli.copy(containerId, content);
     if (copyResult.succeeded === false) {
