@@ -60,18 +60,17 @@ class BuildahCli {
             }
             let output = '';
             let error = '';
-            const options = {
-                listeners: {
-                    stdout: (data) => {
-                        output += data.toString();
-                    },
-                    stderr: (data) => {
-                        error += data.toString();
-                    }
+            const options = {};
+            options.listeners = {
+                stdout: (data) => {
+                    output += data.toString();
+                },
+                stderr: (data) => {
+                    error += data.toString();
                 }
             };
-            yield exec.exec(`${this.executable}`, args, options);
-            if (error) {
+            const exitCode = yield exec.exec(this.executable, args, options);
+            if (exitCode === 1) {
                 return Promise.resolve({ succeeded: false, error: error });
             }
             return Promise.resolve({ succeeded: true, output: output });

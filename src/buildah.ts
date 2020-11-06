@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 
 interface Buildah {
@@ -43,6 +44,9 @@ export class BuildahCli implements Buildah {
         return await this.execute(['from', baseImage]);
     }
     async copy(container: string, content: string, path?: string): Promise<CommandResult> {
+        core.debug('copy');
+        core.debug(container);
+        core.debug(content);
         const args: string[] = ["copy", container, content];
         if (path) {
             args.push(path);
@@ -50,6 +54,8 @@ export class BuildahCli implements Buildah {
         return await this.execute(args);
     }
     async config(container: string, settings: BuildahConfigSettings): Promise<CommandResult> {
+        core.debug('config');
+        core.debug(container);
         const args: string[] = ['config'];
         if (settings.entrypoint) {
             args.push('--entrypoint');
@@ -63,6 +69,9 @@ export class BuildahCli implements Buildah {
         return await this.execute(args);
     }
     async commit(container: string, newImageName: string, flags: string[] = []): Promise<CommandResult> {
+        core.debug('commit');
+        core.debug(container);
+        core.debug(newImageName);
         const args: string[] = ["commit", ...flags, container, newImageName];
         return await this.execute(args);
     }
@@ -76,18 +85,17 @@ export class BuildahCli implements Buildah {
         let output = '';
         let error = '';
         
-        const options: exec.ExecOptions = {
-            listeners: {
-                stdout: (data: Buffer) => {
-                    output += data.toString();
-                },
-                stderr: (data: Buffer) => {
-                    error += data.toString();
-                }
+        const options: exec.ExecOptions = {};
+        options.listeners = {
+            stdout: (data: Buffer): void => {
+                output += data.toString();
+            },
+            stderr: (data: Buffer): void => {
+                error += data.toString();
             }
         };
-        await exec.exec(`${this.executable}`, args, options);
-        if (error) {
+        const exitCode = await exec.exec(this.executable, args, options);
+        if (exitCode === 1) {
             return Promise.resolve({ succeeded: false, error: error });
         } 
         return Promise.resolve({ succeeded: true, output: output });
