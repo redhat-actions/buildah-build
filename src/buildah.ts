@@ -63,7 +63,7 @@ export class BuildahCli implements Buildah {
         }
         if (settings.port) {
             args.push('--port');
-            args.push(...settings.port);
+            args.push(settings.port);
         }
         args.push(container);
         return await this.execute(args);
