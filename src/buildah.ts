@@ -59,7 +59,7 @@ export class BuildahCli implements Buildah {
         const args: string[] = ['config'];
         if (settings.entrypoint) {
             args.push('--entrypoint');
-            args.push(...settings.entrypoint);
+            args.push(this.convertArrayToStringArg(settings.entrypoint));
         }
         if (settings.port) {
             args.push('--port');
@@ -76,6 +76,13 @@ export class BuildahCli implements Buildah {
         return await this.execute(args);
     }
 
+    private convertArrayToStringArg(args: string[]): string {
+        let arrayAsString = '[';
+        args.forEach(arg => {
+            arrayAsString += `"${arg}",`;
+        });
+        return `${arrayAsString.slice(0, -1)}]`;
+    }
 
     private async execute(args: string[]): Promise<CommandResult> {
         if (!this.executable) {

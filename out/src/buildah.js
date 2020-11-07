@@ -43,11 +43,11 @@ class BuildahCli {
             const args = ['config'];
             if (settings.entrypoint) {
                 args.push('--entrypoint');
-                args.push(...settings.entrypoint);
+                args.push(this.convertArrayToStringArg(settings.entrypoint));
             }
             if (settings.port) {
                 args.push('--port');
-                args.push(...settings.port);
+                args.push(settings.port);
             }
             args.push(container);
             return yield this.execute(args);
@@ -61,6 +61,13 @@ class BuildahCli {
             const args = ["commit", ...flags, container, newImageName];
             return yield this.execute(args);
         });
+    }
+    convertArrayToStringArg(args) {
+        let arrayAsString = '[';
+        args.forEach(arg => {
+            arrayAsString += `"${arg}",`;
+        });
+        return `${arrayAsString.slice(0, -1)}]`;
     }
     execute(args) {
         return __awaiter(this, void 0, void 0, function* () {
