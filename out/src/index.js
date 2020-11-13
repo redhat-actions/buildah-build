@@ -100,7 +100,7 @@ function getSuggestedBaseImage(languages) {
 function getBaseImageByLanguage(language) {
     return __awaiter(this, void 0, void 0, function* () {
         // eslint-disable-next-line no-undef
-        const rawData = yield fs_1.promises.readFile(path.join(__dirname, 'language-image.json'), 'utf-8');
+        const rawData = yield fs_1.promises.readFile(path.join(__dirname, '..', 'language-image.json'), 'utf-8');
         const languageImageJSON = JSON.parse(rawData);
         return languageImageJSON[language.name];
     });

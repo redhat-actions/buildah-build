@@ -97,7 +97,7 @@ async function getSuggestedBaseImage(languages: Language[]): Promise<string> {
 
 async function getBaseImageByLanguage(language: Language): Promise<string> {
     // eslint-disable-next-line no-undef
-    const rawData = await fs.readFile(path.join(__dirname, 'language-image.json'), 'utf-8');
+    const rawData = await fs.readFile(path.join(__dirname, '..', 'language-image.json'), 'utf-8');
     const languageImageJSON = JSON.parse(rawData);
     return languageImageJSON[language.name];      
 }
