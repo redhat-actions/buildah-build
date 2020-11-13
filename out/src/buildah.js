@@ -18,22 +18,25 @@ class BuildahCli {
     }
     from(baseImage) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!baseImage) {
-                // find correct baseImage based on language project
-            }
             return yield this.execute(['from', baseImage]);
         });
     }
-    copy(container, content, path) {
+    copy(container, contentToCopy, path) {
         return __awaiter(this, void 0, void 0, function* () {
             core.debug('copy');
             core.debug(container);
-            core.debug(content);
-            const args = ["copy", container, content];
-            if (path) {
-                args.push(path);
+            let result;
+            for (const content of contentToCopy) {
+                const args = ["copy", container, content];
+                if (path) {
+                    args.push(path);
+                }
+                result = yield this.execute(args);
+                if (result.succeeded === false) {
+                    return result;
+                }
             }
-            return yield this.execute(args);
+            return result;
         });
     }
     config(container, settings) {
@@ -48,6 +51,12 @@ class BuildahCli {
             if (settings.port) {
                 args.push('--port');
                 args.push(settings.port);
+            }
+            if (settings.envs) {
+                settings.envs.forEach((env) => {
+                    args.push('--env');
+                    args.push(env);
+                });
             }
             args.push(container);
             return yield this.execute(args);

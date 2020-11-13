@@ -1,58 +1,51 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
+import { CommandResult } from "./types";
 
 interface Buildah {
-    from(baseImage?: string): Promise<CommandResult>;
-    copy(container: string, content: string): Promise<CommandResult>;
+    from(baseImage: string): Promise<CommandResult>;
+    copy(container: string, contentToCopy: string[]): Promise<CommandResult>;
     config(container: string, setting: {}): Promise<CommandResult>;
     commit(container: string, newImageName: string, flags?: string[]): Promise<CommandResult>;
 }
 
 export interface BuildahConfigSettings {
-    author?: string;
-    annotation?: string;
-    arch?: string;
-    created_by?: string;
     entrypoint?: string[];
-    labels?: string[];
     envs?: string[];
     port?: string;
+    workingdir?: string;
 }
-
-export interface CommandSucceeeded {
-    readonly succeeded: true;
-    readonly output?: string;
-}
-
-export interface CommandFailed {
-    readonly succeeded: false;
-    readonly reason?: string;
-}
-
-export type CommandResult = CommandFailed | CommandSucceeeded;
 
 export class BuildahCli implements Buildah {
+
     private executable: string;
+
     constructor(executable: string) {
         this.executable = executable;
     }
-    async from(baseImage?: string): Promise<CommandResult> {
-        if (!baseImage) {
-            // find correct baseImage based on language project
-        }
 
+    async from(baseImage: string): Promise<CommandResult> {
         return await this.execute(['from', baseImage]);
     }
-    async copy(container: string, content: string, path?: string): Promise<CommandResult> {
+
+    async copy(container: string, contentToCopy: string[], path?: string): Promise<CommandResult> {
         core.debug('copy');
         core.debug(container);
-        core.debug(content);
-        const args: string[] = ["copy", container, content];
-        if (path) {
-            args.push(path);
+        let result: CommandResult;
+        for (const content of contentToCopy) {
+            const args: string[] = ["copy", container, content];
+            if (path) {
+                args.push(path);
+            }
+            result = await this.execute(args);
+            if (result.succeeded === false) {
+                return result;
+            }
         }
-        return await this.execute(args);
+        
+        return result;
     }
+
     async config(container: string, settings: BuildahConfigSettings): Promise<CommandResult> {
         core.debug('config');
         core.debug(container);
@@ -65,9 +58,16 @@ export class BuildahCli implements Buildah {
             args.push('--port');
             args.push(settings.port);
         }
+        if (settings.envs) {
+            settings.envs.forEach((env) => {
+                args.push('--env');
+                args.push(env);
+            });
+        }
         args.push(container);
         return await this.execute(args);
     }
+
     async commit(container: string, newImageName: string, flags: string[] = []): Promise<CommandResult> {
         core.debug('commit');
         core.debug(container);
