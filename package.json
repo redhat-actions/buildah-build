@@ -1,7 +1,7 @@
 {
   "name": "buildah-action",
   "version": "0.0.1",
-  "description": "",
+  "description": "Action for building OCI-compatible images using buildah",
   "main": "index.js",
   "scripts": {
     "compile": "tsc -p .",

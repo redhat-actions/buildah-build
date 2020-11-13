@@ -103,8 +103,8 @@ export class BuildahCli implements Buildah {
         };
         const exitCode = await exec.exec(this.executable, args, options);
         if (exitCode === 1) {
-            return Promise.resolve({ succeeded: false, error: error });
+            return Promise.resolve({ succeeded: false, error });
         } 
-        return Promise.resolve({ succeeded: true, output: output });
+        return Promise.resolve({ succeeded: true, output });
     }
 }

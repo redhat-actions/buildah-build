@@ -1,6 +1,6 @@
-name: 'Lucas Test Build Action'
+name: 'Buildah Action'
 description: 'This action allows you to build an image from your app'
-author: 'Luca'
+author: 'Red Hat'
 branding:
   icon: circle
   color: red
@@ -19,7 +19,7 @@ inputs:
     required: true
   port:
     description: 'Port'
-    required: false  
+    required: true  
   working-dir:
     description: 'Working directory'
     required: false
