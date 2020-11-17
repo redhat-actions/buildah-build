@@ -5,26 +5,34 @@ branding:
   icon: circle
   color: red
 inputs:
-  new-image-name:
-    description: 'Name of the new image that will be created'
+  image:
+    description: 'The name (reference) of the image to build'
     required: true
   base-image:
-    description: 'Base image to use'
+    description: 'The base image to use to create a new container'
     required: false
+  dockerfiles:
+    description: 'The path of one or more Dockerfiles (default: ./Dockerfile)'
+    required: false
+    default: './Dockerfile'
+  context:
+    description: 'Path to the directory to use as context (default: .)'
+    required: false
+    default: '.'
   content:
     description: 'The content to copy inside the base image'
-    required: true
+    required: false
   entrypoint:
-    description: 'Entrypoint'
-    required: true
+    description: 'The entry point to set for containers based on image'
+    required: false
   port:
-    description: 'Port'
-    required: true  
+    description: 'The port to expose when running containers based on image'
+    required: false  
   working-dir:
-    description: 'Working directory'
+    description: 'The working directory to use within the container'
     required: false
   envs:
-    description: 'envs'
+    description: 'The environment variables to be set when running containers based on image'
     required: false
 runs:
   using: 'node12'

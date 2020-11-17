@@ -7,23 +7,49 @@ import * as path from 'path';
 import { Language } from 'language-recognizer/lib/types';
 
 export async function run(): Promise<void> {
+
+    if (process.env.RUNNER_OS !== 'Linux') {
+        return Promise.reject(new Error('Only linux platform is supported at this time.'));
+    }
+
+    // get buildah cli
+    const buildahPath = await io.which('buildah', true);
+    const cli: BuildahCli = new BuildahCli(buildahPath);
+
+    const workspace = process.env['GITHUB_WORKSPACE'];
+    let dockerFiles = getInputList('dockerfiles');
+    const newImage = core.getInput('image');
+
+    dockerFiles = dockerFiles.map(file => path.join(workspace, file));
+
+    const dockerBuild = await isDockerBuild(workspace, dockerFiles);
+
+    if (dockerBuild) {        
+        doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);        
+    } else {
+        doBuildFromScratch(cli, newImage, workspace);
+    }    
+}
+
+async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[]): Promise<void> {
+    const context = path.join(workspace, core.getInput('context'));
+    const build = await cli.buildUsingDocker(newImage, context, dockerFiles);
+    if (build.succeeded === false) {
+        return Promise.reject(new Error('Failed building an image from docker files.'));
+    }
+}
+
+async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string) {
     let baseImage = core.getInput('base-image');
     const content = getInputList('content');
-    const newImageName = core.getInput('new-image-name');
+    
     const entrypoint = getInputList('entrypoint');
     const port = core.getInput('port');
     const workingDir = core.getInput('working-dir');
     const envs = getInputList('envs');
 
-    if (process.env.RUNNER_OS !== 'Linux') {
-        return Promise.reject(new Error('Only linux platform is supported at this time.'));
-    }
-    // get buildah cli
-    const buildahPath = await io.which('buildah', true);    
-
     // if base-image is not specified by the user we need to pick one automatically 
-    if (!baseImage) {
-        const workspace = process.env['GITHUB_WORKSPACE'];
+    if (!baseImage) {        
         if (workspace) {
             // check language/framework used and pick base-image automatically
             const languages = await recognizer.detectLanguages(workspace);
@@ -35,9 +61,7 @@ export async function run(): Promise<void> {
             return Promise.reject(new Error('No base image found to create a new container'));
         }        
     }
-
-    // create the new image
-    const cli: BuildahCli = new BuildahCli(buildahPath);
+    
     const container = await cli.from(baseImage);
     if (container.succeeded === false) {
         return Promise.reject(new Error(container.reason));
@@ -60,10 +84,20 @@ export async function run(): Promise<void> {
         return Promise.reject(new Error(configResult.reason));
     }
 
-    const commit = await cli.commit(containerId, newImageName, ['--squash']);
+    const commit = await cli.commit(containerId, newImage, ['--squash']);
     if (commit.succeeded === false) {
         return Promise.reject(new Error(commit.reason));
     }
+}
+
+async function isDockerBuild(workspace: string, dockerFiles: string[]): Promise<boolean> {
+    for(const file of dockerFiles) {
+        const fileExists = (await fs.stat(path.join(workspace, file)).then(() => true).catch(() => false));
+        if (!fileExists) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function getInputList(name: string): string[] {
