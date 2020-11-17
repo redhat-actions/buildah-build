@@ -1,5 +1,9 @@
 # buildah-action
 
+[![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-action?sort=semver)](https://github.com/redhat-actions/buildah-action/tags)
+[![license badge](https://img.shields.io/github/license/redhat-actions/buildah-action)](./LICENSE)
+[![size badge](https://img.shields.io/github/size/redhat-actions/buildah-action/dist/index.js)](./dist)
+
 Buildah is a GitHub Action for building OCI-compatible (Docker- and Kubernetes-compatible) images quickly and easily.
 
 Buildah action works only on Linux distributions, and it is not supported on Windows or Mac platforms at this time.
@@ -54,8 +58,8 @@ Note that GitHub's [Ubuntu Environments](https://github.com/actions/virtual-envi
 
 ## Examples
 
-```
-name: CI
+```yaml
+name: Build Image
 on: [push]
 
 jobs:
@@ -78,7 +82,7 @@ jobs:
         content: |
           target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
         entrypoint: |
-          java    
+          java
           -jar
           spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
         port: 8080
@@ -95,5 +99,3 @@ If you discover an issue please file a bug in [GitHub issues](https://github.com
 ## License
 
 MIT, See [LICENSE](https://github.com/redhat-actions/buildah/blob/main/LICENSE.md) for more information.
-
-
