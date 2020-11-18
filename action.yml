@@ -15,7 +15,7 @@ inputs:
     description: 'List of Dockerfile paths (eg: ./Dockerfile)'
     required: false
   context:
-    description: 'Path to the directory to use as context (default: .)'
+    description: 'Path of the directory to use as context (default: .)'
     required: false
     default: '.'
   content:

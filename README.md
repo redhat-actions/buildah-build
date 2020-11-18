@@ -15,48 +15,103 @@ Note that GitHub's [Ubuntu Environments](https://github.com/actions/virtual-envi
 <table>
   <thead>
     <tr>
-      <th>Action input</th>
+      <th>input</th>
+      <th>Required</th>
       <th>Description</th>
     </tr>
   </thead>
 
   <tr>
-    <td>new-image-name</td>
-    <td>(Required) Name to give to the image that will be eventually created.</td>
+    <td>image</td>
+    <td>Yes</td>
+    <td>Name to give to the image that will be eventually created.</td>
   </tr>
 
   <tr>
     <td>base-name</td>
-    <td>(Optional) The base image to use to create the initial container. If not specified, the action will try to pick one automatically. Only Java language is supported at this time.</td>
+    <td>No</td>
+    <td>The base image to use to create the initial container. If not specified, the action will try to pick one automatically. (N.B: At this time the action is only able to auto select Java base image)</td>
+  </tr>
+
+  <tr>
+    <td>dockerfiles</td>
+    <td>No</td>
+    <td>The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to add multiple values.</td>
+  </tr>
+
+  <tr>
+    <td>context</td>
+    <td>No</td>
+    <td>The path of the directory to use as context (default: .)</td>
   </tr>
 
   <tr>
     <td>content</td>
-    <td>(Required) The content to copy inside the container to create the final image. This is a multiline input to allow you to copy more than one file/directory. For example - <br> content: | <br> target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</td>
+    <td>No</td>
+    <td>The content to copy inside the container to create the final image. This is a multiline input to allow you to copy more than one file/directory. For example - <br> content: | <br> target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</td>
   </tr>
 
   <tr>
     <td>entrypoint</td>
-    <td>(Required) The entry point to set for the container. This is a multiline input to add multiple values. For example - <br> entrypoint: | <br> java <br> -jar <br> spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</td>
+    <td>No</td>
+    <td>The entry point to set for the container. This is a multiline input to add multiple values. For example - <br> entrypoint: | <br> java <br> -jar <br> spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</td>
   </tr>
 
   <tr>
     <td>port</td>
-    <td>(Required) The port to expose when running the container.</td>
+    <td>No</td>
+    <td>The port to expose when running the container.</td>
   </tr>
 
   <tr>
     <td>working-dir</td>
-    <td>(Optional) The working directory to use within the container.</td>
+    <td>No</td>
+    <td>The working directory to use within the container.</td>
   </tr>
 
   <tr>
     <td>envs</td>
-    <td>(Optional) The environment variables to be set when running the container. This is a multiline input to add multiple environment variables.For example - <br> envs: | <br> GOPATH=/root/buildah</td>
+    <td>No</td>
+    <td>The environment variables to be set when running the container. This is a multiline input to add multiple environment variables.For example - <br> envs: | <br> GOPATH=/root/buildah</td>
   </tr>
 </table>
 
-## Examples
+## Build an image using Dockerfile or from scratch 
+
+One of the advantages of using the `buildah` action is that you can decide the way you want to build your image. 
+
+If you have been using Docker and have some existing Dockerfiles, `buildah` is able to build images by using them.
+In this case the inputs needed are just `image`, `dockerfiles` and `content`.
+
+An example below
+
+```yaml
+name: Build Image using Dockerfile
+on: [push]
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Buildah Action
+      uses: redhat-actions/buildah-action@v1
+      with:
+        image: awesome-name:v1
+        dockerfiles: |
+          ./Dockerfile
+```
+
+On the other hand, a build from scratch may require more inputs as it needs to execute a series of steps that can be summarized in:
+- Create a new container by using the base image (input: `base-image`)
+- Copy all files/directories inside the newly-created container (input: `content`)
+- Set up the image configuration values (inputs: `entrypoint`,`port`,`envs`)
+- Build an optimized image
+
+Example of building a Spring Boot Java app image below
 
 ```yaml
 name: Build Image
@@ -72,13 +127,11 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Maven
-      run: |
-        cd ${GITHUB_WORKSPACE}
-        mvn package
+      run: mvn package
     - name: Build Action
-      uses: redhat-actions/buildah-action@0.0.1
+      uses: redhat-actions/buildah-action@v1
       with:
-        new-image-name: petclinic
+        image: awesome-name:v1
         content: |
           target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
         entrypoint: |
