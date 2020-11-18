@@ -19,12 +19,8 @@ export async function run(): Promise<void> {
     const workspace = process.env['GITHUB_WORKSPACE'];
     let dockerFiles = getInputList('dockerfiles');
     const newImage = core.getInput('image');
-
-    dockerFiles = dockerFiles.map(file => path.join(workspace, file));
-
-    const dockerBuild = await isDockerBuild(workspace, dockerFiles);
-
-    if (dockerBuild) {        
+    
+    if (dockerFiles.length !== 0) {
         doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);        
     } else {
         doBuildFromScratch(cli, newImage, workspace);
@@ -33,6 +29,7 @@ export async function run(): Promise<void> {
 
 async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[]): Promise<void> {
     const context = path.join(workspace, core.getInput('context'));
+    dockerFiles = dockerFiles.map(file => path.join(workspace, file));
     const build = await cli.buildUsingDocker(newImage, context, dockerFiles);
     if (build.succeeded === false) {
         return Promise.reject(new Error('Failed building an image from docker files.'));
@@ -41,8 +38,7 @@ async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, worksp
 
 async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string) {
     let baseImage = core.getInput('base-image');
-    const content = getInputList('content');
-    
+    const content = getInputList('content');    
     const entrypoint = getInputList('entrypoint');
     const port = core.getInput('port');
     const workingDir = core.getInput('working-dir');
@@ -88,16 +84,6 @@ async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: 
     if (commit.succeeded === false) {
         return Promise.reject(new Error(commit.reason));
     }
-}
-
-async function isDockerBuild(workspace: string, dockerFiles: string[]): Promise<boolean> {
-    for(const file of dockerFiles) {
-        const fileExists = (await fs.stat(path.join(workspace, file)).then(() => true).catch(() => false));
-        if (!fileExists) {
-            return false;
-        }
-    }
-    return true;
 }
 
 function getInputList(name: string): string[] {

@@ -31,7 +31,7 @@ export class BuildahCli implements Buildah {
             args.push('-f');
             args.push(file);
         });
-        args.push('t');
+        args.push('-t');
         args.push(image);
         args.push(context);
         return await this.execute(args);
