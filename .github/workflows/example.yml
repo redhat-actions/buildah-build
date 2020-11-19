@@ -1,0 +1,56 @@
+# This example workflow will build container image
+# of the application using buildah and push the 
+# image to quay.io (Image registry)
+
+name: Build and Push
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build image using Buildah
+    runs-on: ubuntu-latest
+
+    # Checkout spring-petclinic repository to perform test
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        repository: 'spring-projects/spring-petclinic'
+
+    # Setup java
+    - name: Setup Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+
+    # Run maven action to build the project
+    - name: Maven
+      run: mvn package
+
+    # Build image using Buildah action
+    - name: Build Action
+      uses: redhat-actions/buildah-action@main
+      with:
+        image: spring-petclinic
+        tag: v1
+        content: |
+          target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
+        entrypoint: |
+          java
+          -jar
+          spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
+        port: 8080
+    
+    # Check if image is build
+    - name: Check images created
+      run: buildah images | grep 'spring-petclinic'
+
+    # Push Image to Quay registry
+    - name: Push To Quay Action
+      uses: redhat-actions/push-to-registry@v1
+      with:
+        image: 'spring-petclinic'
+        tag: 'v1'
+        registry: ${{ secrets.QUAY_REPO }}
+        username: ${{ secrets.QUAY_USERNAME }}
+        password: ${{ secrets.QUAY_PASSWORD }}
