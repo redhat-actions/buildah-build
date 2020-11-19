@@ -30,8 +30,8 @@ inputs:
     required: false
   port:
     description: 'The port to expose when running containers based on image'
-    required: false  
-  working-dir:
+    required: false
+  workdir:
     description: 'The working directory to use within the container'
     required: false
   envs:

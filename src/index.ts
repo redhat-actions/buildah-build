@@ -18,13 +18,13 @@ export async function run(): Promise<void> {
 
     const workspace = process.env['GITHUB_WORKSPACE'];
     let dockerFiles = getInputList('dockerfiles');
-    const newImage = `${core.getInput('image')}:${core.getInput('tag')}`;
-    
+    const newImage = `${core.getInput('image', { required: true })}:${core.getInput('tag', { required: true })}`;
+
     if (dockerFiles.length !== 0) {
-        doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);        
+        doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);
     } else {
         doBuildFromScratch(cli, newImage, workspace);
-    }    
+    }
 }
 
 async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[]): Promise<void> {
@@ -38,14 +38,14 @@ async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, worksp
 
 async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string) {
     let baseImage = core.getInput('base-image');
-    const content = getInputList('content');    
+    const content = getInputList('content');
     const entrypoint = getInputList('entrypoint');
     const port = core.getInput('port');
-    const workingDir = core.getInput('working-dir');
+    const workingDir = core.getInput('workdir');
     const envs = getInputList('envs');
 
-    // if base-image is not specified by the user we need to pick one automatically 
-    if (!baseImage) {        
+    // if base-image is not specified by the user we need to pick one automatically
+    if (!baseImage) {
         if (workspace) {
             // check language/framework used and pick base-image automatically
             const languages = await recognizer.detectLanguages(workspace);
@@ -55,9 +55,9 @@ async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: 
             }
         } else {
             return Promise.reject(new Error('No base image found to create a new container'));
-        }        
+        }
     }
-    
+
     const container = await cli.from(baseImage);
     if (container.succeeded === false) {
         return Promise.reject(new Error(container.reason));
@@ -119,7 +119,7 @@ async function getBaseImageByLanguage(language: Language): Promise<string> {
     // eslint-disable-next-line no-undef
     const rawData = await fs.readFile(path.join(__dirname, '..', 'language-image.json'), 'utf-8');
     const languageImageJSON = JSON.parse(rawData);
-    return languageImageJSON[language.name];      
+    return languageImageJSON[language.name];
 }
 
 run().catch(core.setFailed);
