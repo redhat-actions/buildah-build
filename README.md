@@ -1,5 +1,5 @@
 # buildah
-
+[![Verify Bundle](https://github.com/redhat-actions/buildah-action/workflows/Verify%20Bundle/badge.svg)](https://github.com/redhat-actions/buildah-action/actions?query=workflow%3A%22Verify+Bundle%22)
 [![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-action?sort=semver)](https://github.com/redhat-actions/buildah-action/tags)
 [![license badge](https://img.shields.io/github/license/redhat-actions/buildah-action)](./LICENSE)
 [![size badge](https://img.shields.io/github/size/redhat-actions/buildah-action/dist/index.js)](./dist)
@@ -45,7 +45,7 @@ Note that GitHub's [Ubuntu Environments](https://github.com/actions/virtual-envi
   <tr>
     <td>dockerfiles</td>
     <td>No</td>
-    <td>The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input if you wish to add multiple Dockerfiles.
+    <td>The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles.
     </td>
   </tr>
 
@@ -68,8 +68,11 @@ Note that GitHub's [Ubuntu Environments](https://github.com/actions/virtual-envi
   <tr>
     <td>entrypoint</td>
     <td>No</td>
-    <td>The entry point to set for the container. Can split arguments across multiple lines if desired.
-      <pre>entrypoint: java -jar spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</pre>
+    <td>The entry point to set for the container. This is a multiline input; split arguments across lines.
+      <pre>entrypoint: |
+  java
+  -jar
+  spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</pre>
     </td>
   </tr>
 
@@ -139,7 +142,8 @@ Do not set `dockerfiles` if you are doing a build from scratch, or a docker buil
 - `content` to copy into the new image
   - In a Dockerfile, this would be `COPY` directives.
 - `entrypoint` so the container knows what command to run.
-- All other optional configuration inputs.
+  - In a Dockerfile, this would be the `ENTRYPOINT`.
+- All other optional configuration inputs, such as `port`, `envs`, and `workdir`.
 
 Example of building a Spring Boot Java app image:
 ```yaml
