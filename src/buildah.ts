@@ -3,6 +3,7 @@ import * as exec from "@actions/exec";
 import { CommandResult } from "./types";
 
 interface Buildah {
+    buildUsingDocker(image: string, context: string, dockerFiles: string[]): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[]): Promise<CommandResult>;
     config(container: string, setting: {}): Promise<CommandResult>;
@@ -22,6 +23,18 @@ export class BuildahCli implements Buildah {
 
     constructor(executable: string) {
         this.executable = executable;
+    }
+
+    async buildUsingDocker(image: string, context: string, dockerFiles: string[]): Promise<CommandResult> {
+        const args: string[] = ['bud'];
+        dockerFiles.forEach(file => {
+            args.push('-f');
+            args.push(file);
+        });
+        args.push('-t');
+        args.push(image);
+        args.push(context);
+        return await this.execute(args);
     }
 
     async from(baseImage: string): Promise<CommandResult> {
