@@ -1,5 +1,5 @@
 # buildah
-
+[![Verify Bundle](https://github.com/redhat-actions/buildah-action/workflows/Verify%20Bundle/badge.svg)](https://github.com/redhat-actions/buildah-action/actions?query=workflow%3A%22Verify+Bundle%22)
 [![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-action?sort=semver)](https://github.com/redhat-actions/buildah-action/tags)
 [![license badge](https://img.shields.io/github/license/redhat-actions/buildah-action)](./LICENSE)
 [![size badge](https://img.shields.io/github/size/redhat-actions/buildah-action/dist/index.js)](./dist)
@@ -139,7 +139,8 @@ Do not set `dockerfiles` if you are doing a build from scratch, or a docker buil
 - `content` to copy into the new image
   - In a Dockerfile, this would be `COPY` directives.
 - `entrypoint` so the container knows what command to run.
-- All other optional configuration inputs.
+  - In a Dockerfile, this would be the `ENTRYPOINT`.
+- All other optional configuration inputs, such as `port`, `envs`, and `workdir`.
 
 Example of building a Spring Boot Java app image:
 ```yaml
