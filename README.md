@@ -28,6 +28,12 @@ Note that GitHub's [Ubuntu Environments](https://github.com/actions/virtual-envi
   </tr>
 
   <tr>
+    <td>tag</td>
+    <td>No</td>
+    <td>Tag to give to the image that will be eventually created (default: latest)</td>
+  </tr>
+
+  <tr>
     <td>base-name</td>
     <td>No</td>
     <td>The base image to use to create the initial container. If not specified, the action will try to pick one automatically. (N.B: At this time the action is only able to auto select Java base image)</td>
