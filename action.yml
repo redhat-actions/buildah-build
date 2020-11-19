@@ -8,6 +8,10 @@ inputs:
   image:
     description: 'The name (reference) of the image to build'
     required: true
+  tag:
+    description: 'The tag of the image to build'
+    required: false
+    default: latest
   base-image:
     description: 'The base image to use to create a new container image'
     required: false

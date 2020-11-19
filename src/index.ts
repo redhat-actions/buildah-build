@@ -18,7 +18,7 @@ export async function run(): Promise<void> {
 
     const workspace = process.env['GITHUB_WORKSPACE'];
     let dockerFiles = getInputList('dockerfiles');
-    const newImage = core.getInput('image');
+    const newImage = `${core.getInput('image')}:${core.getInput('tag')}`;
     
     if (dockerFiles.length !== 0) {
         doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);        
