@@ -1,0 +1,76 @@
+# This workflow will perform a test whenever there
+# is some change in code done to ensure that the changes
+# are not buggy and we are getting the desired output.
+name: Test Build
+on: [push, pull_request, workflow_dispatch]
+env:
+  TEST_REPO: spring-petclinic
+  IMAGE_NAME: spring-petclinic
+
+jobs:
+  build:
+    name: Build image using Buildah
+    runs-on: ubuntu-latest
+    steps:
+
+      # Fetch name of the Forked Repository with Branch
+      # if workflow is triggered from pull request
+      - name: Fetch PR head repo and branch name
+        if: github.event_name == 'pull_request'
+        run: |
+          HEAD_REPO_NAME=$(jq -r '.pull_request.head.repo.full_name' "$GITHUB_EVENT_PATH")
+          echo "PR head repo: $HEAD_REPO_NAME"
+          echo "repo=$HEAD_REPO_NAME" >> $GITHUB_ENV
+          echo "branch=$GITHUB_HEAD_REF" >> $GITHUB_ENV
+
+      # Extract repository name with branch
+      - name: Fetch Repository name with branch
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          echo "repo=$GITHUB_REPOSITORY" >> $GITHUB_ENV
+          echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      # Checkout buildah action github repository
+      - name: Checkout Buildah action
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.repo }}
+          ref: ${{ env.branch }}
+          path: "buildah-build"
+
+      # Checkout spring-petclinic github repository
+      - name: Checkout spring-petclinic project
+        uses: actions/checkout@v2
+        with:
+          repository: "spring-projects/spring-petclinic"
+          path: ${{ env.TEST_REPO }}
+
+      # Setup java.
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      # Run maven to build the project
+      - name: Maven
+        working-directory: ${{ env.TEST_REPO }}
+        run: |
+          mvn package -ntp -B 
+
+      # Build image using Buildah action
+      - name: Build Image
+        uses: ./buildah-build/
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          content: |
+            ./spring-petclinic/target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
+          entrypoint: |
+            java
+            -jar
+            spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
+          port: 8080
+
+      # Check if image is build
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'
