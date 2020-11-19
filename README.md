@@ -15,7 +15,7 @@ Note that GitHub's [Ubuntu Environments](https://github.com/actions/virtual-envi
 <table>
   <thead>
     <tr>
-      <th>input</th>
+      <th>Input</th>
       <th>Required</th>
       <th>Description</th>
     </tr>
