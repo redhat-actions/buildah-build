@@ -1,6 +1,5 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
-import { CommandResult } from "./types";
 
 interface Buildah {
     buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[]): Promise<CommandResult>;
@@ -38,29 +37,27 @@ export class BuildahCli implements Buildah {
         args.push('-t');
         args.push(image);
         args.push(context);
-        return await this.execute(args);
+        return this.execute(args);
     }
 
     async from(baseImage: string): Promise<CommandResult> {
-        return await this.execute(['from', baseImage]);
+        return this.execute(['from', baseImage]);
     }
 
-    async copy(container: string, contentToCopy: string[], path?: string): Promise<CommandResult> {
+    async copy(container: string, contentToCopy: string[], path?: string): Promise<CommandResult | undefined> {
+        if (contentToCopy.length === 0) {
+            return undefined;
+        }
+
         core.debug('copy');
         core.debug(container);
-        let result: CommandResult;
         for (const content of contentToCopy) {
             const args: string[] = ["copy", container, content];
             if (path) {
                 args.push(path);
             }
-            result = await this.execute(args);
-            if (result.succeeded === false) {
-                return result;
-            }
+            return this.execute(args);
         }
-
-        return result;
     }
 
     async config(container: string, settings: BuildahConfigSettings): Promise<CommandResult> {
@@ -82,7 +79,7 @@ export class BuildahCli implements Buildah {
             });
         }
         args.push(container);
-        return await this.execute(args);
+        return this.execute(args);
     }
 
     async commit(container: string, newImageName: string, flags: string[] = []): Promise<CommandResult> {
@@ -90,7 +87,7 @@ export class BuildahCli implements Buildah {
         core.debug(container);
         core.debug(newImageName);
         const args: string[] = ["commit", ...flags, container, newImageName];
-        return await this.execute(args);
+        return this.execute(args);
     }
 
     private convertArrayToStringArg(args: string[]): string {
@@ -103,25 +100,27 @@ export class BuildahCli implements Buildah {
 
     private async execute(args: string[]): Promise<CommandResult> {
         if (!this.executable) {
-          return Promise.reject(new Error('Unable to call buildah executable'));
+          throw new Error('Unable to call buildah executable');
         }
 
-        let output = '';
-        let error = '';
+        let stdOut = '';
+        let stdErr = '';
 
         const options: exec.ExecOptions = {};
         options.listeners = {
             stdout: (data: Buffer): void => {
-                output += data.toString();
+                stdOut += data.toString();
             },
             stderr: (data: Buffer): void => {
-                error += data.toString();
+                stdErr += data.toString();
             }
         };
         const exitCode = await exec.exec(this.executable, args, options);
-        if (exitCode === 1) {
-            return Promise.resolve({ succeeded: false, error });
+        if (exitCode !== 0) {
+            throw new Error(`Buildah exited with code ${exitCode}`);
         }
-        return Promise.resolve({ succeeded: true, output });
+        return {
+            exitCode, output: stdOut, error: stdErr
+        };
     }
 }

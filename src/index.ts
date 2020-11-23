@@ -9,7 +9,7 @@ import { Language } from 'language-recognizer/lib/types';
 export async function run(): Promise<void> {
 
     if (process.env.RUNNER_OS !== 'Linux') {
-        return Promise.reject(new Error('Only linux platform is supported at this time.'));
+        throw new Error('buildah, and therefore this action, only works on Linux. Please use a Linux runner.');
     }
 
     // get buildah cli
@@ -21,23 +21,31 @@ export async function run(): Promise<void> {
     const newImage = `${core.getInput('image', { required: true })}:${core.getInput('tag', { required: true })}`;
 
     if (dockerFiles.length !== 0) {
-        doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);
+        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);
     } else {
-        doBuildFromScratch(cli, newImage, workspace);
+        await doBuildFromScratch(cli, newImage, workspace);
     }
+
+    core.setOutput("image", newImage);
 }
 
 async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[]): Promise<void> {
-    const context = path.join(workspace, core.getInput('context'));
-    const buildArgs = getInputList(core.getInput('build-args'));
-    dockerFiles = dockerFiles.map(file => path.join(workspace, file));
-    const build = await cli.buildUsingDocker(newImage, context, dockerFiles, buildArgs);
-    if (build.succeeded === false) {
-        return Promise.reject(new Error('Failed building an image from docker files.'));
+    if (dockerFiles.length === 1) {
+        core.info(`Performing build from Dockerfile`);
     }
+    else {
+        core.info(`Performing build from ${dockerFiles.length} Dockerfiles`);
+    }
+
+    const context = path.join(workspace, core.getInput('context'));
+    const buildArgs = getInputList('build-args');
+    dockerFiles = dockerFiles.map(file => path.join(workspace, file));
+    await cli.buildUsingDocker(newImage, context, dockerFiles, buildArgs);
 }
 
-async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string) {
+async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string): Promise<void> {
+    core.info(`Performing build from scratch`)
+
     let baseImage = core.getInput('base-image');
     const content = getInputList('content');
     const entrypoint = getInputList('entrypoint');
@@ -52,23 +60,17 @@ async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: 
             const languages = await recognizer.detectLanguages(workspace);
             baseImage = await getSuggestedBaseImage(languages);
             if (!baseImage) {
-                return Promise.reject(new Error('No base image found to create a new container'));
+                throw new Error('No base image found to create a new container');
             }
         } else {
-            return Promise.reject(new Error('No base image found to create a new container'));
+            throw new Error('No base image found to create a new container');
         }
     }
 
     const container = await cli.from(baseImage);
-    if (container.succeeded === false) {
-        return Promise.reject(new Error(container.reason));
-    }
     const containerId = container.output.replace('\n', '');
 
-    const copyResult = await cli.copy(containerId, content);
-    if (copyResult.succeeded === false) {
-        return Promise.reject(new Error(copyResult.reason));
-    }
+    await cli.copy(containerId, content);
 
     const newImageConfig: BuildahConfigSettings = {
         entrypoint: entrypoint,
@@ -76,15 +78,8 @@ async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: 
         workingdir: workingDir,
         envs: envs
     };
-    const configResult = await cli.config(containerId, newImageConfig);
-    if (configResult.succeeded === false) {
-        return Promise.reject(new Error(configResult.reason));
-    }
-
-    const commit = await cli.commit(containerId, newImage, ['--squash']);
-    if (commit.succeeded === false) {
-        return Promise.reject(new Error(commit.reason));
-    }
+    await cli.config(containerId, newImageConfig);
+    await cli.commit(containerId, newImage, ['--squash']);
 }
 
 function getInputList(name: string): string[] {
@@ -117,7 +112,6 @@ async function getSuggestedBaseImage(languages: Language[]): Promise<string> {
 }
 
 async function getBaseImageByLanguage(language: Language): Promise<string> {
-    // eslint-disable-next-line no-undef
     const rawData = await fs.readFile(path.join(__dirname, '..', 'language-image.json'), 'utf-8');
     const languageImageJSON = JSON.parse(rawData);
     return languageImageJSON[language.name];
