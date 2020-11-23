@@ -3,7 +3,7 @@ import * as exec from "@actions/exec";
 import { CommandResult } from "./types";
 
 interface Buildah {
-    buildUsingDocker(image: string, context: string, dockerFiles: string[]): Promise<CommandResult>;
+    buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[]): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[]): Promise<CommandResult>;
     config(container: string, setting: {}): Promise<CommandResult>;
@@ -25,12 +25,16 @@ export class BuildahCli implements Buildah {
         this.executable = executable;
     }
 
-    async buildUsingDocker(image: string, context: string, dockerFiles: string[]): Promise<CommandResult> {
+    async buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[]): Promise<CommandResult> {
         const args: string[] = ['bud'];
         dockerFiles.forEach(file => {
             args.push('-f');
             args.push(file);
         });
+        buildArgs.forEach((buildArg) => {
+            args.push('--build-arg');
+            args.push(buildArg);
+        })
         args.push('-t');
         args.push(image);
         args.push(context);
@@ -55,7 +59,7 @@ export class BuildahCli implements Buildah {
                 return result;
             }
         }
-        
+
         return result;
     }
 
@@ -104,7 +108,7 @@ export class BuildahCli implements Buildah {
 
         let output = '';
         let error = '';
-        
+
         const options: exec.ExecOptions = {};
         options.listeners = {
             stdout: (data: Buffer): void => {
@@ -117,7 +121,7 @@ export class BuildahCli implements Buildah {
         const exitCode = await exec.exec(this.executable, args, options);
         if (exitCode === 1) {
             return Promise.resolve({ succeeded: false, error });
-        } 
+        }
         return Promise.resolve({ succeeded: true, output });
     }
 }

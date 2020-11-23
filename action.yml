@@ -37,6 +37,9 @@ inputs:
   envs:
     description: 'List of environment variables to be set when running containers based on image'
     required: false
+  build-args:
+    description: 'List of --build-args to pass to buildah.'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

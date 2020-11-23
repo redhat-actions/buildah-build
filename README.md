@@ -59,6 +59,13 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
   </tr>
 
   <tr>
+    <td>build-args</td>
+    <td>No</td>
+    <td>Build arguments to pass to the Docker build using <code>--build-arg</code>, if using a Dockerfile that requires ARGs.<br>
+    Uses the form <code>arg_name=arg_value</code>, and separate arguments with newlines.</td>
+  </tr>
+
+  <tr>
     <td>content</td>
     <td>No</td>
     <td>The content to copy inside the container to create the final image. This is a multiline input to allow you to copy more than one file/directory.<br>
@@ -109,7 +116,7 @@ You can configure the `buildah` action to build your image using one or more Doc
 
 If you have been using Docker and have an existing Dockerfile, `buildah` can reuse your dockerfile.
 
-In this case the inputs needed are `image` and `dockerfiles`. `tag` is also recommended.
+In this case the inputs needed are `image` and `dockerfiles`. `tag` is also recommended. If your Dockerfile requires ARGs, these can be passed using `build-arg`.
 
 ```yaml
 name: Build Image using Dockerfile
@@ -130,6 +137,8 @@ jobs:
         tag: v1
         dockerfiles: |
           ./Dockerfile
+        build-args: |
+          some_arg=some_value
 ```
 
 ### Building from scratch

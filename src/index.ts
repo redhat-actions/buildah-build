@@ -29,8 +29,9 @@ export async function run(): Promise<void> {
 
 async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[]): Promise<void> {
     const context = path.join(workspace, core.getInput('context'));
+    const buildArgs = getInputList(core.getInput('build-args'));
     dockerFiles = dockerFiles.map(file => path.join(workspace, file));
-    const build = await cli.buildUsingDocker(newImage, context, dockerFiles);
+    const build = await cli.buildUsingDocker(newImage, context, dockerFiles, buildArgs);
     if (build.succeeded === false) {
         return Promise.reject(new Error('Failed building an image from docker files.'));
     }
