@@ -1,7 +1,11 @@
 {
-  "name": "buildah-action",
+  "name": "buildah-build",
   "version": "0.0.1",
   "description": "Action for building OCI-compatible images using buildah",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-actions/buildah-build"
+  },
   "main": "dist/index.js",
   "scripts": {
     "compile": "tsc -p .",

@@ -1,14 +1,16 @@
 # buildah
-[![Verify Bundle](https://github.com/redhat-actions/buildah-action/workflows/Verify%20Bundle/badge.svg)](https://github.com/redhat-actions/buildah-action/actions?query=workflow%3A%22Verify+Bundle%22)
-[![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-action?sort=semver)](https://github.com/redhat-actions/buildah-action/tags)
-[![license badge](https://img.shields.io/github/license/redhat-actions/buildah-action)](./LICENSE)
-[![size badge](https://img.shields.io/github/size/redhat-actions/buildah-action/dist/index.js)](./dist)
+[![Verify Bundle](https://github.com/redhat-actions/buildah-build/workflows/Verify%20Bundle/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Verify+Bundle%22)
+[![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-build?sort=semver)](https://github.com/redhat-actions/buildah-build/tags)
+[![license badge](https://img.shields.io/github/license/redhat-actions/buildah-build)](./LICENSE)
+[![size badge](https://img.shields.io/github/size/redhat-actions/buildah-build/dist/index.js)](./dist)
 
 Buildah is a GitHub Action for building OCI-compatible (Docker- and Kubernetes-compatible) images quickly and easily.
 
 Buildah action works only on Linux distributions, and it is not supported on Windows or Mac platforms at this time.
 
 Note that GitHub's [Ubuntu Environments](https://github.com/actions/virtual-environments#available-environments) (ubuntu-20.04 and ubuntu-18.04) come with buildah 1.17.0 installed. If you are not using these environments, you must first [install buildah](https://github.com/containers/buildah/blob/master/install.md).
+
+After building your image, use [push-to-registry](https://github.com/redhat-actions/push-to-registry) to push the image and make it pullable.
 
 ## Action Inputs
 
@@ -122,7 +124,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Buildah Action
-      uses: redhat-actions/buildah-action@v1
+      uses: redhat-actions/buildah-build@v1
       with:
         image: my-new-image
         tag: v1
@@ -161,7 +163,7 @@ jobs:
     - run: mvn package
 
     - name: Build Image
-      uses: redhat-actions/buildah-action@v1
+      uses: redhat-actions/buildah-build@v1
       with:
         base-image: docker.io/fabric8/java-alpine-openjdk11-jre
         image: my-new-image

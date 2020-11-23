@@ -1,4 +1,4 @@
-name: 'Buildah Action'
+name: 'Buildah Build'
 description: 'This action allows you to build an image from your app'
 author: 'Red Hat'
 branding:
