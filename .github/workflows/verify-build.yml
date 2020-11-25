@@ -63,12 +63,13 @@ jobs:
         uses: ./buildah-build/
         with:
           image: ${{ env.IMAGE_NAME }}
+          # To avoid hardcoding a particular version of the binary.
           content: |
-            ./spring-petclinic/target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
+            ./spring-petclinic/target/spring-petclinic-*.BUILD-SNAPSHOT.jar
           entrypoint: |
             java
             -jar
-            spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
+            spring-petclinic-*.BUILD-SNAPSHOT.jar
           port: 8080
 
       # Check if image is build
