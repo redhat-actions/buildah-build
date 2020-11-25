@@ -1,5 +1,8 @@
 # buildah
+[![Verify Build](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build%22)
 [![Verify Bundle](https://github.com/redhat-actions/buildah-build/workflows/Verify%20Bundle/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Verify+Bundle%22)
+<br>
+<br>
 [![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-build?sort=semver)](https://github.com/redhat-actions/buildah-build/tags)
 [![license badge](https://img.shields.io/github/license/redhat-actions/buildah-build)](./LICENSE)
 [![size badge](https://img.shields.io/github/size/redhat-actions/buildah-build/dist/index.js)](./dist)
