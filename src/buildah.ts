@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
+import * as path from "path";
 
 interface Buildah {
     buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[], useOCI: boolean): Promise<CommandResult>;
@@ -103,29 +104,38 @@ export class BuildahCli implements Buildah {
         return `${arrayAsString.slice(0, -1)}]`;
     }
 
-    private async execute(args: string[]): Promise<CommandResult> {
-        if (!this.executable) {
-          throw new Error('Unable to call buildah executable');
-        }
+    private async execute(args: string[], execOptions: exec.ExecOptions = {}): Promise<CommandResult> {
 
-        let stdOut = '';
-        let stdErr = '';
+        // ghCore.info(`${EXECUTABLE} ${args.join(" ")}`)
 
-        const options: exec.ExecOptions = {};
-        options.listeners = {
-            stdout: (data: Buffer): void => {
-                stdOut += data.toString();
+        let stdout = "";
+        let stderr = "";
+
+        const finalExecOptions = { ...execOptions };
+        finalExecOptions.ignoreReturnCode = true;     // the return code is processed below
+
+        finalExecOptions.listeners = {
+            stdline: (line) => {
+                stdout += line + "\n";
             },
-            stderr: (data: Buffer): void => {
-                stdErr += data.toString();
-            }
-        };
-        const exitCode = await exec.exec(this.executable, args, options);
-        if (exitCode !== 0) {
-            throw new Error(`Buildah exited with code ${exitCode}`);
+            errline: (line) => {
+                stderr += line + "\n"
+            },
         }
+
+        const exitCode = await exec.exec(this.executable, args, finalExecOptions);
+
+        if (execOptions.ignoreReturnCode !== true && exitCode !== 0) {
+            // Throwing the stderr as part of the Error makes the stderr show up in the action outline, which saves some clicking when debugging.
+            let error = `${path.basename(this.executable)} exited with code ${exitCode}`;
+            if (stderr) {
+                error += `\n${stderr}`;
+            }
+            throw new Error(error);
+        }
+
         return {
-            exitCode, output: stdOut, error: stdErr
+            exitCode, output: stdout, error: stderr
         };
     }
 }
