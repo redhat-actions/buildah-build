@@ -20,16 +20,18 @@ export async function run(): Promise<void> {
     let dockerFiles = getInputList('dockerfiles');
     const newImage = `${core.getInput('image', { required: true })}:${core.getInput('tag', { required: true })}`;
 
+    const useOCI = core.getInput("useOCI") === "true";
+
     if (dockerFiles.length !== 0) {
-        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles);
+        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI);
     } else {
-        await doBuildFromScratch(cli, newImage, workspace);
+        await doBuildFromScratch(cli, newImage, workspace, useOCI);
     }
 
     core.setOutput("image", newImage);
 }
 
-async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[]): Promise<void> {
+async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean): Promise<void> {
     if (dockerFiles.length === 1) {
         core.info(`Performing build from Dockerfile`);
     }
@@ -40,10 +42,10 @@ async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, worksp
     const context = path.join(workspace, core.getInput('context'));
     const buildArgs = getInputList('build-args');
     dockerFiles = dockerFiles.map(file => path.join(workspace, file));
-    await cli.buildUsingDocker(newImage, context, dockerFiles, buildArgs);
+    await cli.buildUsingDocker(newImage, context, dockerFiles, buildArgs, useOCI);
 }
 
-async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string): Promise<void> {
+async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string, useOCI: boolean): Promise<void> {
     core.info(`Performing build from scratch`)
 
     let baseImage = core.getInput('base-image');
@@ -79,7 +81,7 @@ async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: 
         envs: envs
     };
     await cli.config(containerId, newImageConfig);
-    await cli.commit(containerId, newImage, ['--squash']);
+    await cli.commit(containerId, newImage, useOCI);
 }
 
 function getInputList(name: string): string[] {

@@ -50,6 +50,15 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
   </tr>
 
   <tr>
+    <td>oci</td>
+    <td>No</td>
+    <td>
+      Build the image using the OCI format, instead of the Docker format.<br>
+      By default, this is <code>false</code>, because images built using the OCI format have <a href="https://github.com/docker/hub-feedback/issues/1871">issues</a> when published to Dockerhub.
+    </td>
+  </tr>
+
+  <tr>
     <td>context</td>
     <td>No</td>
     <td>Path to directory to use as the build context.<br>

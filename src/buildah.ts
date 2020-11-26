@@ -2,11 +2,11 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 
 interface Buildah {
-    buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[]): Promise<CommandResult>;
+    buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[], useOCI: boolean): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[]): Promise<CommandResult>;
     config(container: string, setting: {}): Promise<CommandResult>;
-    commit(container: string, newImageName: string, flags?: string[]): Promise<CommandResult>;
+    commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult>;
 }
 
 export interface BuildahConfigSettings {
@@ -24,7 +24,11 @@ export class BuildahCli implements Buildah {
         this.executable = executable;
     }
 
-    async buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[]): Promise<CommandResult> {
+    private getImageFormatOption(useOCI: boolean): string[] {
+        return [ '--format', useOCI ? 'oci' : 'docker' ];
+    }
+
+    async buildUsingDocker(image: string, context: string, dockerFiles: string[], buildArgs: string[], useOCI: boolean): Promise<CommandResult> {
         const args: string[] = ['bud'];
         dockerFiles.forEach(file => {
             args.push('-f');
@@ -33,7 +37,8 @@ export class BuildahCli implements Buildah {
         buildArgs.forEach((buildArg) => {
             args.push('--build-arg');
             args.push(buildArg);
-        })
+        });
+        args.push(...this.getImageFormatOption(useOCI));
         args.push('-t');
         args.push(image);
         args.push(context);
@@ -82,11 +87,11 @@ export class BuildahCli implements Buildah {
         return this.execute(args);
     }
 
-    async commit(container: string, newImageName: string, flags: string[] = []): Promise<CommandResult> {
+    async commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult> {
         core.debug('commit');
         core.debug(container);
         core.debug(newImageName);
-        const args: string[] = ["commit", ...flags, container, newImageName];
+        const args: string[] = [ 'commit', ...this.getImageFormatOption(useOCI), '--squash', container, newImageName ];
         return this.execute(args);
     }
 

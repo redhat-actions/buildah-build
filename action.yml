@@ -40,6 +40,10 @@ inputs:
   build-args:
     description: 'List of --build-args to pass to buildah.'
     required: false
+  oci:
+    description: 'Set to true to build using the OCI image format instead of the Docker image format.'
+    default: 'false'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
