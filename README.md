@@ -1,4 +1,4 @@
-# buildah
+# buildah-build
 [![Verify Build](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build%22)
 [![Verify Bundle](https://github.com/redhat-actions/buildah-build/workflows/Verify%20Bundle/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Verify+Bundle%22)
 <br>
