@@ -7,7 +7,7 @@
 [![license badge](https://img.shields.io/github/license/redhat-actions/buildah-build)](./LICENSE)
 [![size badge](https://img.shields.io/github/size/redhat-actions/buildah-build/dist/index.js)](./dist)
 
-Buildah is a GitHub Action for building OCI-compatible (Docker- and Kubernetes-compatible) images quickly and easily.
+Buildah is a GitHub Action for building Docker and Kubernetes-compatible images quickly and easily.
 
 Buildah only works on Linux. GitHub's [Ubuntu Environments](https://github.com/actions/virtual-environments#available-environments) (`ubuntu-18.04` and newer) come with buildah installed. If you are not using these environments, or if you want to use a different version, you must first [install buildah](https://github.com/containers/buildah/blob/master/install.md).
 
