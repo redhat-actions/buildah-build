@@ -1,5 +1,5 @@
 name: 'Buildah Build'
-description: 'This action allows you to build an image from your app'
+description: 'Build a container image from a Dockerfile, or from scratch'
 author: 'Red Hat'
 branding:
   icon: circle
