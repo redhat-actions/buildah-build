@@ -20,7 +20,7 @@ export async function run(): Promise<void> {
     let dockerFiles = getInputList('dockerfiles');
     const newImage = `${core.getInput('image', { required: true })}:${core.getInput('tag', { required: true })}`;
 
-    const useOCI = core.getInput("useOCI") === "true";
+    const useOCI = core.getInput("oci") == "true";
 
     if (dockerFiles.length !== 0) {
         await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI);
