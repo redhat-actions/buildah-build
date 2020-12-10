@@ -1,5 +1,5 @@
 name: 'Buildah Build'
-description: 'Build a container image from a Dockerfile, or from scratch'
+description: 'Build a container image, with or without a Dockerfile'
 author: 'Red Hat'
 branding:
   icon: circle
