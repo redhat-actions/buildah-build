@@ -120,11 +120,11 @@ envs: |
 
 ## Build Types
 
-You can configure the `buildah` action to build your image using one or more Dockerfiles, or from scratch.
+You can configure the `buildah` action to build your image using one or more Dockerfiles, or none at all.
 
-### Building using Docker
+### Building using Dockerfiles
 
-If you have been using Docker and have an existing Dockerfile, `buildah` can reuse your dockerfile.
+If you have been building your images with an existing Dockerfile, `buildah` can reuse your Dockerfile.
 
 In this case the inputs needed are `image` and `dockerfiles`. `tag` is also recommended. If your Dockerfile requires ARGs, these can be passed using `build-arg`.
 
@@ -151,11 +151,11 @@ jobs:
           some_arg=some_value
 ```
 
-### Building from scratch
+### Building without a Dockerfile
 
-Building from scratch requires more inputs, that would normally be specified in the Dockerfile.
+Building without a Dockerfile requires additional inputs, that would normally be specified in the Dockerfile.
 
-Do not set `dockerfiles` if you are doing a build from scratch, or a docker build will be performed, and the other inputs will be ignored.
+Do not set `dockerfiles` if you are doing a build from scratch. Otherwise those Dockerfiles will be used, and the inputs below will be ignored.
 
 - An output `image` name and usually a `tag`.
 - `base-image`
