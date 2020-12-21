@@ -193,6 +193,15 @@ jobs:
         port: 8080
 ```
 
+## Using private images
+If your build requires a private image, you have to `docker login` in a step before running this action.
+
+For example:
+```yaml
+- name: Log in to Red Hat Registry
+  run: echo "${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}" | docker login registry.redhat.io -u "${{ secrets.REGISTRY_REDHAT_IO_USER }}" --password-stdin
+```
+
 ## Contributing
 
 This is an open source project open to anyone. This project welcomes contributions and suggestions!
