@@ -4,8 +4,9 @@
 name: Test Build
 on: [push, pull_request, workflow_dispatch]
 env:
-  TEST_REPO: spring-petclinic
+  PROJECT_DIR: spring-petclinic
   IMAGE_NAME: spring-petclinic
+  MVN_REPO_DIR: ~/.m2/repository
 
 jobs:
   build:
@@ -24,7 +25,22 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: "spring-projects/spring-petclinic"
-          path: ${{ env.TEST_REPO }}
+          path: ${{ env.PROJECT_DIR }}
+      
+      # If none of these files has changed, we assume that the contents of
+      # .m2/repository can be fetched from the cache.
+      - name: Hash Maven files
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          echo "MVN_HASH=${{ hashFiles('**/pom.xml', '.mvn/**/*', 'mvnw*') }}" >> $GITHUB_ENV
+      
+      # Download the m2 repository from the cache to speed up the build.
+      - name: Check for Maven cache
+        id: check-mvn-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.MVN_REPO_DIR }}
+          key: ${{ env.MVN_HASH }}
 
       # Setup java.
       - name: Setup Java
@@ -34,15 +50,35 @@ jobs:
 
       # Run maven to build the project
       - name: Maven
-        working-directory: ${{ env.TEST_REPO }}
+        working-directory: ${{ env.PROJECT_DIR }}
         run: |
           mvn package -ntp -B 
 
+       # If there was no cache hit above, store the output into the cache now.
+      - name: Save Maven repo into cache
+        if: ${{ steps.check-mvn-cache.outputs.cache-hit }} != 'true'
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.MVN_REPO_DIR }}
+          key: ${{ env.MVN_HASH }}
+
+        # Store the output jar into the env for reuse below.
+        # It will contain, eg. "spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar"
+      - name: Get jar filename  
+        id: get-jarname
+        run: |
+          export JAR_NAME="$(basename $(ls ${{ env.PROJECT_DIR }}/target/*.jar))"
+          echo "Petclinic jar is $JAR_NAME"
+          echo "::set-output name=jarname::$JAR_NAME"
+          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
+      
       # Build image using Buildah action
       - name: Build Image
+        id: build_image
         uses: ./buildah-build/
         with:
           image: ${{ env.IMAGE_NAME }}
+          tags: 'latest v2'
           # To avoid hardcoding a particular version of the binary.
           content: |
             ./spring-petclinic/target/spring-petclinic-*.BUILD-SNAPSHOT.jar
@@ -51,6 +87,11 @@ jobs:
             -jar
             spring-petclinic-*.BUILD-SNAPSHOT.jar
           port: 8080
+      
+      - name: Echo Outputs
+        run: | 
+          echo "Image: ${{ steps.build_image.outputs.image }}"
+          echo "Tags: ${{ steps.build_image.outputs.tags }}"
 
       # Check if image is build
       - name: Check images created

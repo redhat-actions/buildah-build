@@ -8,8 +8,8 @@ inputs:
   image:
     description: 'The name (reference) of the image to build'
     required: true
-  tag:
-    description: 'The tag of the image to build'
+  tags:
+    description: 'The tags of the image to build. For multiple tags, seperate by a space. For example, "v1 v0.1".'
     required: false
     default: latest
   base-image:
@@ -44,6 +44,11 @@ inputs:
     description: 'Set to true to build using the OCI image format instead of the Docker image format.'
     default: 'false'
     required: false
+outputs:
+  image:
+    description: 'Name of the image built'
+  tags:
+    description: 'List of tags delimeted by a space'
 runs:
   using: 'node12'
   main: 'dist/index.js'

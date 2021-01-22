@@ -1,6 +1,9 @@
 {
   "name": "buildah-build",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "engines": {
+    "node": "12"
+  },
   "description": "Action for building OCI-compatible images using buildah",
   "repository": {
     "type": "git",
@@ -10,7 +13,8 @@
   "scripts": {
     "compile": "tsc -p .",
     "bundle": "ncc build src/index.ts --source-map --minify",
-    "clean": "rm -rf out/ dist/"
+    "clean": "rm -rf out/ dist/",
+    "lint": "eslint . --max-warnings=0"
   },
   "keywords": [],
   "author": "Red Hat",
@@ -22,8 +26,13 @@
     "language-recognizer": "0.0.1"
   },
   "devDependencies": {
+    "@redhat-actions/eslint-config": "^1.2.4",
+    "@redhat-actions/tsconfig": "^1.1.1",
     "@types/node": "^12",
+    "@typescript-eslint/eslint-plugin": "^4.14.0",
+    "@typescript-eslint/parser": "^4.14.0",
     "@vercel/ncc": "^0.25.1",
+    "eslint": "^7.18.0",
     "typescript": "^4.0.5"
   }
 }

@@ -31,10 +31,10 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
   </tr>
 
   <tr>
-    <td>tag</td>
+    <td>tags</td>
     <td>No</td>
     <td>
-      Tag to give to the output image.<br>
+      The tags of the image to build. For multiple tags, seperate by a space. For example, <code>v1 v0.1</code>.<br>
       Default: <code>latest</code>
     </td>
   </tr>
@@ -118,6 +118,14 @@ envs: |
   </tr>
 </table>
 
+## Action Outputs
+
+`image`: The name of the built image.<br>
+For example, `spring-image`.
+
+`tags`: The list of tags delimeted by a space.<br>
+For example, `v1 v0.1`.
+
 ## Build Types
 
 You can configure the `buildah` action to build your image using one or more Dockerfiles, or none at all.
@@ -144,7 +152,7 @@ jobs:
       uses: redhat-actions/buildah-build@v1
       with:
         image: my-new-image
-        tag: v1
+        tags: v1
         dockerfiles: |
           ./Dockerfile
         build-args: |
@@ -186,7 +194,7 @@ jobs:
       with:
         base-image: docker.io/fabric8/java-alpine-openjdk11-jre
         image: my-new-image
-        tag: v1
+        tags: v1
         content: |
           target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
         entrypoint: java -jar spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar
