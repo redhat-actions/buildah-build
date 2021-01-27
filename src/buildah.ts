@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as path from "path";
+import CommandResult from "./types";
 
 export interface BuildahConfigSettings {
     entrypoint?: string[];

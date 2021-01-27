@@ -1,9 +1,6 @@
 import * as core from "@actions/core";
 import * as io from "@actions/io";
-import * as recognizer from "language-recognizer";
-import { promises as fs } from "fs";
 import * as path from "path";
-import { Language } from "language-recognizer/lib/types";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
 
 export async function run(): Promise<void> {
@@ -27,7 +24,7 @@ export async function run(): Promise<void> {
         await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI);
     }
     else {
-        await doBuildFromScratch(cli, newImage, workspace, useOCI);
+        await doBuildFromScratch(cli, newImage, useOCI);
     }
 
     if (tagsList.length > 1) {
@@ -54,31 +51,16 @@ async function doBuildUsingDockerFiles(
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, workspace: string, useOCI: boolean,
+    cli: BuildahCli, newImage: string, useOCI: boolean,
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
-    let baseImage = core.getInput("base-image");
+    const baseImage = core.getInput("base-image", { required: true });
     const content = getInputList("content");
     const entrypoint = getInputList("entrypoint");
     const port = core.getInput("port");
     const workingDir = core.getInput("workdir");
     const envs = getInputList("envs");
-
-    // if base-image is not specified by the user we need to pick one automatically
-    if (!baseImage) {
-        if (workspace) {
-            // check language/framework used and pick base-image automatically
-            const languages = await recognizer.detectLanguages(workspace);
-            baseImage = await getSuggestedBaseImage(languages);
-            if (!baseImage) {
-                throw new Error("No base image found to create a new container");
-            }
-        }
-        else {
-            throw new Error("No base image found to create a new container");
-        }
-    }
 
     const container = await cli.from(baseImage);
     const containerId = container.output.replace("\n", "");
@@ -107,24 +89,6 @@ function getInputList(name: string): string[] {
             (acc, line) => acc.concat(line).map((pat) => pat.trim()),
             [],
         );
-}
-
-async function getSuggestedBaseImage(languages: Language[]): Promise<string> {
-    let baseImage = "";
-    for (const language of languages) {
-        baseImage = await getBaseImageByLanguage(language);
-        if (baseImage) {
-            return baseImage;
-        }
-    }
-
-    return baseImage;
-}
-
-async function getBaseImageByLanguage(language: Language): Promise<string> {
-    const rawData = await fs.readFile(path.join(__dirname, "..", "language-image.json"), "utf-8");
-    const languageImageJSON = JSON.parse(rawData);
-    return languageImageJSON[language.name];
 }
 
 run().catch(core.setFailed);

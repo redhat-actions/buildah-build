@@ -79,6 +79,7 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: 'latest v2'
+          base-image: 'registry.access.redhat.com/openjdk/openjdk-11-rhel7'
           # To avoid hardcoding a particular version of the binary.
           content: |
             ./spring-petclinic/target/spring-petclinic-*.BUILD-SNAPSHOT.jar

@@ -42,7 +42,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
   <tr>
     <td>base-image</td>
     <td>No</td>
-    <td>The base image to use to create the initial container. If not specified, the action will try to pick one automatically. (N.B: At this time the action is only able to auto select Java base image)</td>
+    <td>The base image to use to create the initial container.</td>
   </tr>
 
   <tr>
@@ -153,6 +153,7 @@ jobs:
       with:
         image: my-new-image
         tags: v1
+        base-image: some_image
         dockerfiles: |
           ./Dockerfile
         build-args: |
