@@ -26,11 +26,11 @@
     "language-recognizer": "0.0.1"
   },
   "devDependencies": {
-    "@redhat-actions/eslint-config": "^1.2.4",
+    "@redhat-actions/eslint-config": "^1.2.11",
     "@redhat-actions/tsconfig": "^1.1.1",
     "@types/node": "^12",
-    "@typescript-eslint/eslint-plugin": "^4.14.0",
-    "@typescript-eslint/parser": "^4.14.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
     "@vercel/ncc": "^0.25.1",
     "eslint": "^7.18.0",
     "typescript": "^4.0.5"

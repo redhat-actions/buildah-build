@@ -12,10 +12,10 @@ export async function run(): Promise<void> {
     const buildahPath = await io.which("buildah", true);
     const cli: BuildahCli = new BuildahCli(buildahPath);
 
-    const workspace = process.env.GITHUB_WORKSPACE || "";
+    const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
     const dockerFiles = getInputList("dockerfiles");
     const image = core.getInput("image", { required: true });
-    const tags = core.getInput("tags");
+    const tags = core.getInput("tags") || "latest";
     const tagsList: string[] = tags.split(" ");
     const newImage = `${image}:${tagsList[0]}`;
     const useOCI = core.getInput("oci") === "true";
@@ -46,8 +46,8 @@ async function doBuildUsingDockerFiles(
 
     const context = path.join(workspace, core.getInput("context"));
     const buildArgs = getInputList("build-args");
-    const inputdockerFiles = dockerFiles.map((file) => path.join(workspace, file));
-    await cli.buildUsingDocker(newImage, context, inputdockerFiles, buildArgs, useOCI);
+    const dockerFileAbsPaths = dockerFiles.map((file) => path.join(workspace, file));
+    await cli.buildUsingDocker(newImage, context, dockerFileAbsPaths, buildArgs, useOCI);
 }
 
 async function doBuildFromScratch(

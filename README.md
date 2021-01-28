@@ -34,7 +34,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
     <td>tags</td>
     <td>No</td>
     <td>
-      The tags of the image to build. For multiple tags, seperate by a space. For example, <code>v1 v0.1</code>.<br>
+      The tags of the image to build. For multiple tags, seperate by a space. For example, <code>latest ${{ github.sha }}</code>.<br>
       Default: <code>latest</code>
     </td>
   </tr>
@@ -42,7 +42,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
   <tr>
     <td>base-image</td>
     <td>No</td>
-    <td>The base image to use to create the initial container.</td>
+    <td>The base image to use for the container.</td>
   </tr>
 
   <tr>
@@ -123,8 +123,8 @@ envs: |
 `image`: The name of the built image.<br>
 For example, `spring-image`.
 
-`tags`: The list of tags delimeted by a space.<br>
-For example, `v1 v0.1`.
+`tags`: A list of the tags that were created, separated by spaces.<br>
+For example, `latest ${{ github.sha }}`.
 
 ## Build Types
 

@@ -78,7 +78,7 @@ jobs:
         uses: ./buildah-build/
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: 'latest v2'
+          tags: 'latest ${{ github.sha }}'
           base-image: 'registry.access.redhat.com/openjdk/openjdk-11-rhel7'
           # To avoid hardcoding a particular version of the binary.
           content: |

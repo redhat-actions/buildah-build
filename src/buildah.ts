@@ -98,8 +98,10 @@ export class BuildahCli implements Buildah {
         core.debug("commit");
         core.debug(container);
         core.debug(newImageName);
-        const args: string[] = [ "commit", ...BuildahCli.getImageFormatOption(useOCI),
-            "--squash", container, newImageName ];
+        const args: string[] = [
+            "commit", ...BuildahCli.getImageFormatOption(useOCI),
+            "--squash", container, newImageName,
+        ];
         return this.execute(args);
     }
 
@@ -130,10 +132,10 @@ export class BuildahCli implements Buildah {
         finalExecOptions.ignoreReturnCode = true;     // the return code is processed below
 
         finalExecOptions.listeners = {
-            stdline: (line) : void => {
+            stdline: (line): void => {
                 stdout += line + "\n";
             },
-            errline: (line) :void => {
+            errline: (line):void => {
                 stderr += line + "\n";
             },
         };
