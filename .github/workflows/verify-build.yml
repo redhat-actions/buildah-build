@@ -45,11 +45,11 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           # To avoid hardcoding a particular version of the binary.
           content: |
-            ./spring-petclinic/target/spring-petclinic-*.BUILD-SNAPSHOT.jar
+            ./spring-petclinic/target/spring-petclinic-*.jar
           entrypoint: |
             java
             -jar
-            spring-petclinic-*.BUILD-SNAPSHOT.jar
+            spring-petclinic-*.jar
           port: 8080
 
       # Check if image is build

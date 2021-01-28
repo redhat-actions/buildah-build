@@ -116,6 +116,13 @@ envs: |
   GOPATH=/root/buildah/go</pre>
     </td>
   </tr>
+
+  <tr>
+    <td>extra-args</td>
+    <td>No</td>
+    <td> Extra args to be passed to build command when building image.
+    </td>
+  </tr>
 </table>
 
 ## Build Types
@@ -165,6 +172,7 @@ Do not set `dockerfiles` if you are doing a build from scratch. Otherwise those 
 - `entrypoint` so the container knows what command to run.
   - In a Dockerfile, this would be the `ENTRYPOINT`.
 - All other optional configuration inputs, such as `port`, `envs`, and `workdir`.
+- `extra-args`
 
 Example of building a Spring Boot Java app image:
 ```yaml

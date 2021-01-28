@@ -21,9 +21,10 @@ export async function run(): Promise<void> {
     const newImage = `${core.getInput('image', { required: true })}:${core.getInput('tag', { required: true })}`;
 
     const useOCI = core.getInput("oci") == "true";
+    const extraArgs = core.getInput("extra-args");
 
     if (dockerFiles.length !== 0) {
-        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI);
+        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI, extraArgs);
     } else {
         await doBuildFromScratch(cli, newImage, workspace, useOCI);
     }
@@ -31,7 +32,7 @@ export async function run(): Promise<void> {
     core.setOutput("image", newImage);
 }
 
-async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean): Promise<void> {
+async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean, extraArgs: string): Promise<void> {
     if (dockerFiles.length === 1) {
         core.info(`Performing build from Dockerfile`);
     }
@@ -42,7 +43,7 @@ async function doBuildUsingDockerFiles(cli: BuildahCli, newImage: string, worksp
     const context = path.join(workspace, core.getInput('context'));
     const buildArgs = getInputList('build-args');
     dockerFiles = dockerFiles.map(file => path.join(workspace, file));
-    await cli.buildUsingDocker(newImage, context, dockerFiles, buildArgs, useOCI);
+    await cli.buildUsingDocker(newImage, context, dockerFiles, buildArgs, useOCI, extraArgs);
 }
 
 async function doBuildFromScratch(cli: BuildahCli, newImage: string, workspace: string, useOCI: boolean): Promise<void> {
