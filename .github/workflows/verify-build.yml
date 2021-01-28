@@ -61,16 +61,6 @@ jobs:
         with:
           path: ${{ env.MVN_REPO_DIR }}
           key: ${{ env.MVN_HASH }}
-
-        # Store the output jar into the env for reuse below.
-        # It will contain, eg. "spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar"
-      - name: Get jar filename  
-        id: get-jarname
-        run: |
-          export JAR_NAME="$(basename $(ls ${{ env.PROJECT_DIR }}/target/*.jar))"
-          echo "Petclinic jar is $JAR_NAME"
-          echo "::set-output name=jarname::$JAR_NAME"
-          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
       
       # Build image using Buildah action
       - name: Build Image
@@ -82,11 +72,11 @@ jobs:
           base-image: 'registry.access.redhat.com/openjdk/openjdk-11-rhel7'
           # To avoid hardcoding a particular version of the binary.
           content: |
-            ./spring-petclinic/target/spring-petclinic-*.BUILD-SNAPSHOT.jar
+            ./spring-petclinic/target/spring-petclinic-*.jar
           entrypoint: |
             java
             -jar
-            spring-petclinic-*.BUILD-SNAPSHOT.jar
+            spring-petclinic-*.jar
           port: 8080
       
       - name: Echo Outputs
