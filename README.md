@@ -34,7 +34,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
     <td>tags</td>
     <td>No</td>
     <td>
-      The tags of the image to build. For multiple tags, seperate by a space. For example, <code>latest ${{ github.sha }}</code>.<br>
+      The tags of the image to build. For multiple tags, separate by a space. For example, <code>latest ${{ github.sha }}</code>.<br>
       Default: <code>latest</code>
     </td>
   </tr>
@@ -152,8 +152,7 @@ jobs:
       uses: redhat-actions/buildah-build@v1
       with:
         image: my-new-image
-        tags: v1
-        base-image: some_image
+        tags: v1 ${{ github.sha }}
         dockerfiles: |
           ./Dockerfile
         build-args: |
