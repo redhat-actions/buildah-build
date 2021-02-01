@@ -1,15 +1,10 @@
 {
+    "extends": "@redhat-actions/tsconfig",
     "compilerOptions": {
-        "target": "ES6",
-        "module": "commonjs",
-        "lib": [
-            "ES2017"
-        ],
-        "outDir": "out",
-        "rootDir": ".",
+      "rootDir": "src/",
+      "outDir": "out/"
     },
-    "exclude": [
-        "node_modules",
-        "scripts"
-    ]
+    "include": [
+      "src/"
+    ],
 }
