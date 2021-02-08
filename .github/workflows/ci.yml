@@ -43,6 +43,6 @@ jobs:
         run: npm ci
     
       - name: Verify Input and Output enums
-        uses: redhat-actions/common/action-io-generator@main
+        uses: redhat-actions/common/action-io-generator@v1
         with:
           io_file: ${{ env.IO_FILE }}
