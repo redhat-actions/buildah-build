@@ -1,6 +1,6 @@
 # buildah-build
+[![CI checks](https://github.com/redhat-actions/buildah-build/workflows/CI%20checks/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22CI+checks%22)
 [![Verify Build](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build%22)
-[![Verify Bundle](https://github.com/redhat-actions/buildah-build/workflows/Verify%20Bundle/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Verify+Bundle%22)
 <br>
 <br>
 [![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-build)](https://github.com/redhat-actions/buildah-build/tags)
