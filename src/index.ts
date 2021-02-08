@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as io from "@actions/io";
 import * as path from "path";
+import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
 
 export async function run(): Promise<void> {
@@ -13,12 +14,12 @@ export async function run(): Promise<void> {
     const cli: BuildahCli = new BuildahCli(buildahPath);
 
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-    const dockerFiles = getInputList("dockerfiles");
-    const image = core.getInput("image", { required: true });
-    const tags = core.getInput("tags") || "latest";
+    const dockerFiles = getInputList(Inputs.DOCKERFILES);
+    const image = core.getInput(Inputs.IMAGE, { required: true });
+    const tags = core.getInput(Inputs.TAGS) || "latest";
     const tagsList: string[] = tags.split(" ");
     const newImage = `${image}:${tagsList[0]}`;
-    const useOCI = core.getInput("oci") === "true";
+    const useOCI = core.getInput(Inputs.OCI) === "true";
 
     if (dockerFiles.length !== 0) {
         await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI);
@@ -30,8 +31,8 @@ export async function run(): Promise<void> {
     if (tagsList.length > 1) {
         await cli.tag(image, tagsList);
     }
-    core.setOutput("image", image);
-    core.setOutput("tags", tags);
+    core.setOutput(Outputs.IMAGE, image);
+    core.setOutput(Outputs.TAGS, tags);
 }
 
 async function doBuildUsingDockerFiles(
@@ -44,8 +45,8 @@ async function doBuildUsingDockerFiles(
         core.info(`Performing build from ${dockerFiles.length} Dockerfiles`);
     }
 
-    const context = path.join(workspace, core.getInput("context"));
-    const buildArgs = getInputList("build-args");
+    const context = path.join(workspace, core.getInput(Inputs.CONTEXT));
+    const buildArgs = getInputList(Inputs.BUILD_ARGS);
     const dockerFileAbsPaths = dockerFiles.map((file) => path.join(workspace, file));
     await cli.buildUsingDocker(newImage, context, dockerFileAbsPaths, buildArgs, useOCI);
 }
@@ -55,12 +56,12 @@ async function doBuildFromScratch(
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
-    const baseImage = core.getInput("base-image", { required: true });
-    const content = getInputList("content");
-    const entrypoint = getInputList("entrypoint");
-    const port = core.getInput("port");
-    const workingDir = core.getInput("workdir");
-    const envs = getInputList("envs");
+    const baseImage = core.getInput(Inputs.BASE_IMAGE, { required: true });
+    const content = getInputList(Inputs.CONTENT);
+    const entrypoint = getInputList(Inputs.ENTRYPOINT);
+    const port = core.getInput(Inputs.PORT);
+    const workingDir = core.getInput(Inputs.WORKDIR);
+    const envs = getInputList(Inputs.ENVS);
 
     const container = await cli.from(baseImage);
     const containerId = container.output.replace("\n", "");

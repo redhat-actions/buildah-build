@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+### Copy this into .git/hooks and overwrite the empty one.
+### This will ensure the bundle and ins-outs verification checks won't fail for you.
+
+echo "----- Pre-commit -----"
+set -ex
+npx action-io-generator -o src/generated/inputs-outputs.ts
+npm run bundle
+git add -v dist/ src/generated
