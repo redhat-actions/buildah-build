@@ -1,0 +1,48 @@
+name: CI checks
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    name: Run ESLint
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm run lint
+  
+  check-dist:
+    name: Check Distribution
+    runs-on: ubuntu-20.04
+    env:
+      BUNDLE_FILE: "dist/index.js"
+      BUNDLE_COMMAND: "npm run bundle"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify Latest Bundle
+        uses: redhat-actions/common/bundle-verifier@v1
+        with:
+          bundle_file: ${{ env.BUNDLE_FILE }}
+          bundle_command: ${{ env.BUNDLE_COMMAND }}
+  
+  check-inputs-outputs:
+    name: Check Input and Output enums
+    runs-on: ubuntu-20.04
+    env:
+      IO_FILE: ./src/generated/inputs-outputs.ts
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm ci
+    
+      - name: Verify Input and Output enums
+        uses: redhat-actions/common/action-io-generator@main
+        with:
+          io_file: ${{ env.IO_FILE }}
