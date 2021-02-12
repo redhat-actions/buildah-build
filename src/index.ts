@@ -20,12 +20,15 @@ export async function run(): Promise<void> {
     const tagsList: string[] = tags.split(" ");
     const newImage = `${image}:${tagsList[0]}`;
     const useOCI = core.getInput(Inputs.OCI) === "true";
+    let archs = core.getInput(Inputs.ARCHS);
+    // remove white spaces (if any) in archs input
+    archs = archs.replace(/\s+/g, "");
 
     if (dockerFiles.length !== 0) {
-        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI);
+        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI, archs);
     }
     else {
-        await doBuildFromScratch(cli, newImage, useOCI);
+        await doBuildFromScratch(cli, newImage, useOCI, archs);
     }
 
     if (tagsList.length > 1) {
@@ -36,7 +39,7 @@ export async function run(): Promise<void> {
 }
 
 async function doBuildUsingDockerFiles(
-    cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean,
+    cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean, archs: string
 ): Promise<void> {
     if (dockerFiles.length === 1) {
         core.info(`Performing build from Dockerfile`);
@@ -48,11 +51,11 @@ async function doBuildUsingDockerFiles(
     const context = path.join(workspace, core.getInput(Inputs.CONTEXT));
     const buildArgs = getInputList(Inputs.BUILD_ARGS);
     const dockerFileAbsPaths = dockerFiles.map((file) => path.join(workspace, file));
-    await cli.buildUsingDocker(newImage, context, dockerFileAbsPaths, buildArgs, useOCI);
+    await cli.buildUsingDocker(newImage, context, dockerFileAbsPaths, buildArgs, useOCI, archs);
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, useOCI: boolean,
+    cli: BuildahCli, newImage: string, useOCI: boolean, archs: string
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
@@ -73,6 +76,7 @@ async function doBuildFromScratch(
         port,
         workingdir: workingDir,
         envs,
+        archs,
     };
     await cli.config(containerId, newImageConfig);
     await cli.commit(containerId, newImage, useOCI);
