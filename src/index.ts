@@ -20,7 +20,7 @@ export async function run(): Promise<void> {
     const tagsList: string[] = tags.split(" ");
     const newImage = `${image}:${tagsList[0]}`;
     const useOCI = core.getInput(Inputs.OCI) === "true";
-    let archs = core.getInput(Inputs.ARCHS);
+    let archs: string | undefined = core.getInput(Inputs.ARCHS);
     // remove white spaces (if any) in archs input
     archs = archs.replace(/\s+/g, "");
 

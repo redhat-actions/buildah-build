@@ -45,7 +45,9 @@ inputs:
     default: 'false'
     required: false
   archs:
-    description: 'ARCH of the image to build, for multiple ARCHs seperate by a comma. For example, "arm64,amd64"'
+    description: |
+      'Architecture(s) to build the image(s) for. For multiple architectures,
+      separate by a comma. For example, "arm64,amd64"'
     default: 'amd64'
     required: false
 outputs:
