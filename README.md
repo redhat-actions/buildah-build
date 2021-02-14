@@ -149,7 +149,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Buildah Action
-      uses: redhat-actions/buildah-build@v1
+      uses: redhat-actions/buildah-build@v2
       with:
         image: my-new-image
         tags: v1 ${{ github.sha }}
@@ -190,7 +190,7 @@ jobs:
     - run: mvn package
 
     - name: Build Image
-      uses: redhat-actions/buildah-build@v1
+      uses: redhat-actions/buildah-build@v2
       with:
         base-image: docker.io/fabric8/java-alpine-openjdk11-jre
         image: my-new-image
