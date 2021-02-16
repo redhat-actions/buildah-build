@@ -1,6 +1,8 @@
 # buildah-build
 [![CI checks](https://github.com/redhat-actions/buildah-build/workflows/CI%20checks/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22CI+checks%22)
-[![Verify Build](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build%22)
+[![Test Build with dockerfile](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build%20with%20dockerfile/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build+with+dockerfile%22)
+[![Test Build without dockerfile](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build%20without%20dockerfile/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build+without+dockerfile%22)
+[![Link checker](https://github.com/redhat-actions/buildah-build/workflows/Link%20checker/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Link+checker%22)
 <br>
 <br>
 [![tag badge](https://img.shields.io/github/v/tag/redhat-actions/buildah-build)](https://github.com/redhat-actions/buildah-build/tags)
@@ -15,108 +17,31 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 ## Action Inputs
 
-<table>
-  <thead>
-    <tr>
-      <th>Input</th>
-      <th>Required</th>
-      <th>Description</th>
-    </tr>
-  </thead>
+### Inputs for build from dockerfile
 
-  <tr>
-    <td>image</td>
-    <td>Yes</td>
-    <td>Name to give the output image.</td>
-  </tr>
+| Input Name | Description | Default |
+| ---------- | ----------- | ------- |
+| build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Uses the form `arg_name=arg_value`, and separate arguments with newlines. | None
+| context | Path to directory to use as the build context. | `.`
+| dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
+| image | Name to give to the output image. | **Must be provided**
+| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to `Dockerhub`. | `false`
+| tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
 
-  <tr>
-    <td>tags</td>
-    <td>No</td>
-    <td>
-      The tags of the image to build. For multiple tags, separate by a space. For example, <code>latest ${{ github.sha }}</code>.<br>
-      Default: <code>latest</code>
-    </td>
-  </tr>
+### Inputs for build without dockerfile
 
-  <tr>
-    <td>base-image</td>
-    <td>No</td>
-    <td>The base image to use for the container.</td>
-  </tr>
-
-  <tr>
-    <td>dockerfiles</td>
-    <td>No</td>
-    <td>The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles.
-    </td>
-  </tr>
-
-  <tr>
-    <td>oci</td>
-    <td>No</td>
-    <td>
-      Build the image using the OCI format, instead of the Docker format.<br>
-      By default, this is <code>false</code>, because images built using the OCI format have <a href="https://github.com/docker/hub-feedback/issues/1871">issues</a> when published to Dockerhub.
-    </td>
-  </tr>
-
-  <tr>
-    <td>context</td>
-    <td>No</td>
-    <td>Path to directory to use as the build context.<br>
-    Default: <code>.</code></td>
-  </tr>
-
-  <tr>
-    <td>build-args</td>
-    <td>No</td>
-    <td>Build arguments to pass to the Docker build using <code>--build-arg</code>, if using a Dockerfile that requires ARGs.<br>
-    Uses the form <code>arg_name=arg_value</code>, and separate arguments with newlines.</td>
-  </tr>
-
-  <tr>
-    <td>content</td>
-    <td>No</td>
-    <td>The content to copy inside the container to create the final image. This is a multiline input to allow you to copy more than one file/directory.<br>
-    <pre>content: |
-  target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td>entrypoint</td>
-    <td>No</td>
-    <td>The entry point to set for the container. This is a multiline input; split arguments across lines.
-      <pre>entrypoint: |
-  java
-  -jar
-  spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar</pre>
-    </td>
-  </tr>
-
-  <tr>
-    <td>port</td>
-    <td>No</td>
-    <td>The port to expose when running the container.</td>
-  </tr>
-
-  <tr>
-    <td>workdir</td>
-    <td>No</td>
-    <td>The working directory to use within the container.</td>
-  </tr>
-
-  <tr>
-    <td>envs</td>
-    <td>No</td>
-    <td>The environment variables to be set when running the container. This is a multiline input to add multiple environment variables.<br>
-      <pre>
-envs: |
-  GOPATH=/root/buildah/go</pre>
-    </td>
-  </tr>
-</table>
+| Input Name | Description | Default |
+| ---------- | ----------- | ------- |
+| base-image | The base image to use for the container. | **Must be provided**
+| content | The content to copy inside the container to create the final image. This is a multiline input to allow you to copy more than one file/directory.| No
+| context | Path to directory to use as the build context. | `.`
+| entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
+| envs | The environment variables to be set when running the container. This is a multiline input to add multiple environment variables. | None
+| image | Name to give to the output image. | **Must be provided**
+| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to `Dockerhub`. | `false`
+| port | The port to expose when running the container. | None
+| tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
+| workdir | The working directory to use within the container. | None
 
 ## Action Outputs
 
@@ -181,7 +106,7 @@ on: [push]
 
 jobs:
   build-image:
-    name: Build image
+    name: Build image without Dockerfile
     runs-on: ubuntu-latest
 
     steps:
@@ -216,8 +141,8 @@ This is an open source project open to anyone. This project welcomes contributio
 
 ## Feedback & Questions
 
-If you discover an issue please file a bug in [GitHub issues](https://github.com/redhat-actions/buildah/issues) and we will fix it as soon as possible.
+If you discover an issue please file a bug in [GitHub issues](https://github.com/redhat-actions/buildah-build/issues) and we will fix it as soon as possible.
 
 ## License
 
-MIT, See [LICENSE](https://github.com/redhat-actions/buildah/blob/main/LICENSE.md) for more information.
+MIT, See [LICENSE](https://github.com/redhat-actions/buildah-build/blob/main/LICENSE) for more information.
