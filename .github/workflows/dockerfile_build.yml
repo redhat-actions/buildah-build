@@ -1,17 +1,15 @@
 # This workflow will perform a test whenever there
 # is some change in code done to ensure that the changes
 # are not buggy and we are getting the desired output.
-name: Test Build with dockerfile
+name: Build from dockerfile
 on: [push, pull_request, workflow_dispatch]
 env:
-  PROJECT_DIR: spring-petclinic
-  IMAGE_NAME: spring-petclinic
-  MVN_REPO_DIR: ~/.m2/repository
+  IMAGE_NAME: "hello-world"
 
 jobs:
   build:
     name: Build image using Buildah
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
 
       # Checkout buildah action github repository

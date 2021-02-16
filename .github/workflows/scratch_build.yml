@@ -1,7 +1,7 @@
 # This workflow will perform a test whenever there
 # is some change in code done to ensure that the changes
 # are not buggy and we are getting the desired output.
-name: Test Build without dockerfile
+name: Build from scratch
 on: [push, pull_request, workflow_dispatch]
 env:
   PROJECT_DIR: spring-petclinic

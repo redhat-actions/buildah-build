@@ -21,11 +21,11 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Uses the form `arg_name=arg_value`, and separate arguments with newlines. | None
+| build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
 | image | Name to give to the output image. | **Must be provided**
-| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to `Dockerhub`. | `false`
+| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
 
 ### Inputs for build without dockerfile
@@ -33,12 +33,12 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
 | base-image | The base image to use for the container. | **Must be provided**
-| content | The content to copy inside the container to create the final image. This is a multiline input to allow you to copy more than one file/directory.| No
+| content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | context | Path to directory to use as the build context. | `.`
 | entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
 | envs | The environment variables to be set when running the container. This is a multiline input to add multiple environment variables. | None
 | image | Name to give to the output image. | **Must be provided**
-| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to `Dockerhub`. | `false`
+| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | port | The port to expose when running the container. | None
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
 | workdir | The working directory to use within the container. | None
@@ -134,15 +134,3 @@ For example:
 - name: Log in to Red Hat Registry
   run: echo "${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}" | docker login registry.redhat.io -u "${{ secrets.REGISTRY_REDHAT_IO_USER }}" --password-stdin
 ```
-
-## Contributing
-
-This is an open source project open to anyone. This project welcomes contributions and suggestions!
-
-## Feedback & Questions
-
-If you discover an issue please file a bug in [GitHub issues](https://github.com/redhat-actions/buildah-build/issues) and we will fix it as soon as possible.
-
-## License
-
-MIT, See [LICENSE](https://github.com/redhat-actions/buildah-build/blob/main/LICENSE) for more information.
