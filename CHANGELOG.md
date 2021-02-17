@@ -1,7 +1,7 @@
 # buildah-build Changelog
 
 ## v2.1
-- Add input `archs` to allow you to build image(s) with multiple architecture support [803a141](https://github.com/redhat-actions/buildah-build/commit/803a1413e7c2a594cbfb6680bca358bfdbe36745)
+- Add `archs` input to allow building images for custom architectures. [803a141](https://github.com/redhat-actions/buildah-build/commit/803a1413e7c2a594cbfb6680bca358bfdbe36745)
 
 ## v2
 - Rename `tag` input to `tags`, to allow you to build multiple tags of the same image
