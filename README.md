@@ -1,7 +1,7 @@
 # buildah-build
 [![CI checks](https://github.com/redhat-actions/buildah-build/workflows/CI%20checks/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22CI+checks%22)
-[![Test Build with dockerfile](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build%20with%20dockerfile/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build+with+dockerfile%22)
-[![Test Build without dockerfile](https://github.com/redhat-actions/buildah-build/workflows/Test%20Build%20without%20dockerfile/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Test+Build+without+dockerfile%22)
+[![Build](https://github.com/redhat-actions/buildah-build/workflows/Build/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3ABuild)
+[![Build from dockerfile](https://github.com/redhat-actions/buildah-build/workflows/Build%20from%20dockerfile/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Build+from+dockerfile%22)
 [![Link checker](https://github.com/redhat-actions/buildah-build/workflows/Link%20checker/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Link+checker%22)
 <br>
 <br>
