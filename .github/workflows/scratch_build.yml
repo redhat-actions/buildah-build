@@ -78,7 +78,8 @@ jobs:
             -jar
             spring-petclinic-*.jar
           port: 8080
-      
+          archs: amd64,arm64
+
       - name: Echo Outputs
         run: | 
           echo "Image: ${{ steps.build_image.outputs.image }}"
