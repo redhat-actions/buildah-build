@@ -21,7 +21,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | ARCH of the image to build, for multiple ARCHs seperate by a comma. For example, `"arm64,amd64"`. If running on self hosted runners then suggest running [qemu-user-static](https://github.com/marketplace/actions/docker-setup-qemu) action to install `qemu-user-static`. | `amd64`
+| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. For example, `"arm64,amd64"`. If running on self hosted runners then suggest running [qemu-user-static](https://github.com/marketplace/actions/docker-setup-qemu) action to install `qemu-user-static`. | `amd64`
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
@@ -33,7 +33,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | ARCH of the image to build, for multiple ARCHs seperate by a comma. For example, `"arm64,amd64"`. If running on self hosted runners then suggest running [qemu-user-static](https://github.com/marketplace/actions/docker-setup-qemu) action to install `qemu-user-static`. | `amd64`
+| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. For example, `"arm64,amd64"`. If running on self hosted runners then suggest running [qemu-user-static](https://github.com/marketplace/actions/docker-setup-qemu) action to install `qemu-user-static`. | `amd64`
 | base-image | The base image to use for the container. | **Must be provided**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | context | Path to directory to use as the build context. | `.`
