@@ -2,7 +2,7 @@
 export enum Inputs {
     /**
      * 'Architecture(s) to build the image(s) for. For multiple architectures,
-     * separate by a comma. For example, "arm64,amd64"'
+     * separate by a comma.'
      * Required: false
      * Default: "amd64"
      */
