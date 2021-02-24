@@ -17,17 +17,19 @@ export async function run(): Promise<void> {
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
     const dockerFiles = getInputList(Inputs.DOCKERFILES);
     const image = core.getInput(Inputs.IMAGE, { required: true });
-    const tags = core.getInput(Inputs.TAGS) || DEFAULT_TAG;
+    const tags = core.getInput(Inputs.TAGS);
     const tagsList: string[] = tags.split(" ");
+
+    // info message if user doesn't provides any tag
+    if (!tagsList.length) {
+        core.info(`Input ${Inputs.TAGS} is not provided, using default tag ${DEFAULT_TAG}`);
+        tagsList.push(DEFAULT_TAG);
+    }
     const newImage = `${image}:${tagsList[0]}`;
     const useOCI = core.getInput(Inputs.OCI) === "true";
     let archs: string | undefined = core.getInput(Inputs.ARCHS);
     // remove white spaces (if any) in archs input
     archs = archs.replace(/\s+/g, "");
-
-    if (!tagsList.length) {
-        core.info(`Input ${Inputs.TAGS} is not provided, using default tag ${DEFAULT_TAG}`);
-    }
 
     if (dockerFiles.length !== 0) {
         await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI, archs);
