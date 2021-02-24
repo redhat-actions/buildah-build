@@ -9,7 +9,7 @@ export enum Inputs {
     ARCHS = "archs",
     /**
      * The base image to use to create a new container image
-     * Required: true
+     * Required: false
      * Default: None.
      */
     BASE_IMAGE = "base-image",

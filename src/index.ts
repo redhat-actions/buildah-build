@@ -24,6 +24,10 @@ export async function run(): Promise<void> {
     // remove white spaces (if any) in archs input
     archs = archs.replace(/\s+/g, "");
 
+    if (!tagsList.length) {
+        core.info(`Input "tags" is not provided, using default tag "latest"`);
+    }
+
     if (dockerFiles.length !== 0) {
         await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI, archs);
     }

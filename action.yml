@@ -14,7 +14,7 @@ inputs:
     default: latest
   base-image:
     description: 'The base image to use to create a new container image'
-    required: true
+    required: false
   dockerfiles:
     description: 'List of Dockerfile paths (eg: ./Dockerfile)'
     required: false
