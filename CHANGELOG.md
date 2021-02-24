@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.2
+- Add output message if tags is not provided [76570bc](https://github.com/redhat-actions/buildah-build/commit/76570bc65b73d4072c85224b6f6e2fef3cf2b24b)
+
 ## v2.1
 - Add `archs` input to allow building images for custom architectures [803a141](https://github.com/redhat-actions/buildah-build/commit/803a1413e7c2a594cbfb6680bca358bfdbe36745)
 
