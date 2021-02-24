@@ -13,10 +13,11 @@ export async function run(): Promise<void> {
     const buildahPath = await io.which("buildah", true);
     const cli: BuildahCli = new BuildahCli(buildahPath);
 
+    const DEFAULT_TAG = "latest";
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
     const dockerFiles = getInputList(Inputs.DOCKERFILES);
     const image = core.getInput(Inputs.IMAGE, { required: true });
-    const tags = core.getInput(Inputs.TAGS) || "latest";
+    const tags = core.getInput(Inputs.TAGS) || DEFAULT_TAG;
     const tagsList: string[] = tags.split(" ");
     const newImage = `${image}:${tagsList[0]}`;
     const useOCI = core.getInput(Inputs.OCI) === "true";
@@ -25,7 +26,7 @@ export async function run(): Promise<void> {
     archs = archs.replace(/\s+/g, "");
 
     if (!tagsList.length) {
-        core.info(`Input "tags" is not provided, using default tag "latest"`);
+        core.info(`Input ${Inputs.TAGS} is not provided, using default tag ${DEFAULT_TAG}`);
     }
 
     if (dockerFiles.length !== 0) {
