@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.2.1
+- Add note about multi architecture(s) image built support [1f7c249](https://github.com/redhat-actions/buildah-build/commit/1f7c2499306a8def9affb31cc7d43934bb87907d)
+
 ## v2.2
 - Add output message if tags is not provided [76570bc](https://github.com/redhat-actions/buildah-build/commit/76570bc65b73d4072c85224b6f6e2fef3cf2b24b)
 
