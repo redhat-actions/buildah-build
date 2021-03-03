@@ -21,7 +21,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer [Multi arch builds](#multi-arch-builds) to setup `qemu-user-static` dependency. | `amd64`
+| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer to [Multi arch builds](#multi-arch-builds) to setup the `qemu-user-static` dependency. | `amd64`
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
@@ -33,7 +33,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer [Multi arch builds](#multi-arch-builds) to setup `qemu-user-static` dependency. | `amd64`
+| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer to [Multi arch builds](#multi-arch-builds) to setup the `qemu-user-static` dependency. | `amd64`
 | base-image | The base image to use for the container. | **Must be provided**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | context | Path to directory to use as the build context. | `.`
@@ -128,13 +128,13 @@ jobs:
         port: 8080
 ```
 
-## <a id="multi-arch-builds">Multi arch builds</a>
+<a id="multi-arch-builds"></a>
+## Multi arch builds
 
-For building image(s) with multiple architecture(s) suggest running,
+If building for an architecture other than `amd64`, install `qemu-user-static` using the following command.
 ```
 sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 ```
-to setup `qemu-user-static` dependency.
 
 ## Using private images
 If your build requires a private image, you have to `docker login` in a step before running this action.
