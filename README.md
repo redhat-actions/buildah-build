@@ -15,7 +15,11 @@ Buildah only works on Linux. GitHub's [Ubuntu Environments](https://github.com/a
 
 After building your image, use [push-to-registry](https://github.com/redhat-actions/push-to-registry) to push the image and make it pullable.
 
+<a id="action-inputs"></a>
+
 ## Action Inputs
+
+<a id="dockerfile-build-inputs"></a>
 
 ### Inputs for build from dockerfile
 
@@ -28,6 +32,8 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | image | Name to give to the output image. | **Must be provided**
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
+
+<a id="scratch-build-inputs"></a>
 
 ### Inputs for build without dockerfile
 
@@ -45,6 +51,8 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
 | workdir | The working directory to use within the container. | None
 
+<a id="outputs"></a>
+
 ## Action Outputs
 
 `image`: The name of the built image.<br>
@@ -53,9 +61,13 @@ For example, `spring-image`.
 `tags`: A list of the tags that were created, separated by spaces.<br>
 For example, `latest ${{ github.sha }}`.
 
+<a id="build-types"></a>
+
 ## Build Types
 
 You can configure the `buildah` action to build your image using one or more Dockerfiles, or none at all.
+
+<a id="build-using-dockerfile"></a>
 
 ### Building using Dockerfiles
 
@@ -85,6 +97,7 @@ jobs:
         build-args: |
           some_arg=some_value
 ```
+<a id="scratch-build"></a>
 
 ### Building without a Dockerfile
 
@@ -129,6 +142,7 @@ jobs:
 ```
 
 <a id="multi-arch-builds"></a>
+
 ## Multi arch builds
 
 If building for an architecture other than `amd64`, install `qemu-user-static` using the following command.
