@@ -12,8 +12,11 @@ export async function run(): Promise<void> {
         throw new Error('buildah, and therefore this action, only works on Linux. Please use a Linux runner.');
     }
 
+    // show message if user is using older version
+    core.info(`⚠️ redhat-actions/buildah-build@v2 is now available. https://github.com/redhat-actions/buildah-build/blob/main/CHANGELOG.md`);
+
     // get buildah cli
-    const buildahPath = await io.which('buildah', true);
+    const buildahPath = await io.which("buildah", true);
     const cli: BuildahCli = new BuildahCli(buildahPath);
 
     const workspace = process.env['GITHUB_WORKSPACE'];

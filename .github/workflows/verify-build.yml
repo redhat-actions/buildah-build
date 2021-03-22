@@ -56,7 +56,7 @@ jobs:
       - name: Maven
         working-directory: ${{ env.TEST_REPO }}
         run: |
-          mvn package -ntp -B 
+          mvn package -ntp -B
 
       # Build image using Buildah action
       - name: Build Image
@@ -65,7 +65,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           # To avoid hardcoding a particular version of the binary.
           content: |
-            ./spring-petclinic/target/spring-petclinic-*.BUILD-SNAPSHOT.jar
+            ./spring-petclinic/target/spring-petclinic-*.jar
           entrypoint: |
             java
             -jar
