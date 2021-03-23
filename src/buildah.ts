@@ -131,7 +131,7 @@ export class BuildahCli implements Buildah {
         return `${arrayAsString.slice(0, -1)}]`;
     }
 
-    private async execute(args: string[], execOptions: exec.ExecOptions = {}): Promise<CommandResult> {
+    async execute(args: string[], execOptions: exec.ExecOptions = {}): Promise<CommandResult> {
         // ghCore.info(`${EXECUTABLE} ${args.join(" ")}`)
 
         let stdout = "";

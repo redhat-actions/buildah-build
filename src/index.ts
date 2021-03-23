@@ -13,6 +13,9 @@ export async function run(): Promise<void> {
     const buildahPath = await io.which("buildah", true);
     const cli: BuildahCli = new BuildahCli(buildahPath);
 
+    // print buildah version
+    await cli.execute([ "version" ]);
+
     const DEFAULT_TAG = "latest";
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
     const dockerFiles = getInputList(Inputs.DOCKERFILES);
