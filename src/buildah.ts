@@ -13,7 +13,8 @@ export interface BuildahConfigSettings {
 
 interface Buildah {
     buildUsingDocker(
-        image: string, context: string, dockerFiles: string[], buildArgs: string[], useOCI: boolean, archs: string,
+        image: string, context: string, dockerFiles: string[], buildArgs: string[],
+        useOCI: boolean, archs: string, layers: string
     ): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[]): Promise<CommandResult | undefined>;
@@ -33,7 +34,8 @@ export class BuildahCli implements Buildah {
     }
 
     async buildUsingDocker(
-        image: string, context: string, dockerFiles: string[], buildArgs: string[], useOCI: boolean, archs: string
+        image: string, context: string, dockerFiles: string[], buildArgs: string[],
+        useOCI: boolean, archs: string, layers: string
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
         if (archs) {
@@ -49,6 +51,9 @@ export class BuildahCli implements Buildah {
             args.push(buildArg);
         });
         args.push(...BuildahCli.getImageFormatOption(useOCI));
+        if (layers) {
+            args.push(`--layers=${layers}`);
+        }
         args.push("-t");
         args.push(image);
         args.push(context);

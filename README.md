@@ -30,6 +30,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
 | image | Name to give to the output image. | **Must be provided**
+| layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
 

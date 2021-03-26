@@ -61,7 +61,8 @@ async function doBuildUsingDockerFiles(
     const context = path.join(workspace, core.getInput(Inputs.CONTEXT));
     const buildArgs = getInputList(Inputs.BUILD_ARGS);
     const dockerFileAbsPaths = dockerFiles.map((file) => path.join(workspace, file));
-    await cli.buildUsingDocker(newImage, context, dockerFileAbsPaths, buildArgs, useOCI, archs);
+    const layers = core.getInput(Inputs.LAYERS);
+    await cli.buildUsingDocker(newImage, context, dockerFileAbsPaths, buildArgs, useOCI, archs, layers);
 }
 
 async function doBuildFromScratch(

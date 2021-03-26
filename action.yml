@@ -28,6 +28,9 @@ inputs:
   entrypoint:
     description: 'The entry point to set for containers based on image'
     required: false
+  layers:
+    description: 'Set to true to cache intermediate layers during build process'
+    required: false
   port:
     description: 'The port to expose when running containers based on image'
     required: false

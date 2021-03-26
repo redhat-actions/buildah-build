@@ -56,6 +56,12 @@ export enum Inputs {
      */
     IMAGE = "image",
     /**
+     * Set to true to cache intermediate layers during build process
+     * Required: false
+     * Default: None.
+     */
+    LAYERS = "layers",
+    /**
      * Set to true to build using the OCI image format instead of the Docker image format
      * Required: false
      * Default: "false"
