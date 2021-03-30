@@ -31,12 +31,13 @@ jobs:
         uses: ./buildah-build/
         with:
           image: ${{ env.IMAGE_NAME }}
+          layers: false
           tags: 'latest ${{ github.sha }}'
           dockerfiles: |
             ./Dockerfile
-      
+
       - name: Echo Outputs
-        run: | 
+        run: |
           echo "Image: ${{ steps.build_image.outputs.image }}"
           echo "Tags: ${{ steps.build_image.outputs.tags }}"
 

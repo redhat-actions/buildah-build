@@ -9,9 +9,9 @@
 [![license badge](https://img.shields.io/github/license/redhat-actions/buildah-build)](./LICENSE)
 [![size badge](https://img.shields.io/github/size/redhat-actions/buildah-build/dist/index.js)](./dist)
 
-Buildah is a GitHub Action for building Docker and Kubernetes-compatible images quickly and easily.
+Buildah Build is a GitHub Action for building Docker and Kubernetes-compatible images quickly and easily.
 
-Buildah only works on Linux. GitHub's [Ubuntu Environments](https://github.com/actions/virtual-environments#available-environments) (`ubuntu-18.04` and newer) come with buildah installed. If you are not using these environments, or if you want to use a different version, you must first [install buildah](https://github.com/containers/buildah/blob/master/install.md).
+[Buildah](https://github.com/containers/buildah/tree/master/docs) only works on Linux. GitHub's [Ubuntu Environments](https://github.com/actions/virtual-environments#available-environments) (`ubuntu-18.04` and newer) come with buildah installed. If you are not using these environments, or if you want to use a different version, you must first [install buildah](https://github.com/containers/buildah/blob/master/install.md).
 
 After building your image, use [push-to-registry](https://github.com/redhat-actions/push-to-registry) to push the image and make it pullable.
 
@@ -21,7 +21,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 <a id="dockerfile-build-inputs"></a>
 
-### Inputs for build from dockerfile
+### [Inputs for build from dockerfile](https://github.com/containers/buildah/blob/master/docs/buildah-bud.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
@@ -30,12 +30,13 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
 | image | Name to give to the output image. | **Must be provided**
+| layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
 
 <a id="scratch-build-inputs"></a>
 
-### Inputs for build without dockerfile
+### [Inputs for build without dockerfile](https://github.com/containers/buildah/blob/master/docs/buildah-config.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
