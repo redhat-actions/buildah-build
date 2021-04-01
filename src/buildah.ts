@@ -104,6 +104,10 @@ export class BuildahCli implements Buildah {
             args.push("--arch");
             args.push(settings.archs);
         }
+        if (settings.workingdir) {
+            args.push("--workingdir");
+            args.push(settings.workingdir);
+        }
         args.push(container);
         return this.execute(args);
     }
