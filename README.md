@@ -43,7 +43,6 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer to [Multi arch builds](#multi-arch-builds) to setup the `qemu-user-static` dependency. | `amd64`
 | base-image | The base image to use for the container. | **Must be provided**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
-| context | Path to directory to use as the build context. | `.`
 | entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
 | envs | The environment variables to be set when running the container. This is a multiline input to add multiple environment variables. | None
 | image | Name to give to the output image. | **Must be provided**

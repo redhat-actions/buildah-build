@@ -91,6 +91,7 @@ jobs:
             spring-petclinic-*.jar
           port: 8080
           archs: amd64,arm64
+          workdir: "."
 
       - name: Echo Outputs
         run: |
