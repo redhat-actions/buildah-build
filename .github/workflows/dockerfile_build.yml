@@ -2,7 +2,13 @@
 # is some change in code done to ensure that the changes
 # are not buggy and we are getting the desired output.
 name: Build from dockerfile
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
 env:
   IMAGE_NAME: "hello-world"
 
@@ -25,6 +31,12 @@ jobs:
           RUN echo "hello world"
           EOF
 
+      # Workaround to fix https://github.com/containers/buildah/issues/3120
+      - run: |
+          sudo apt-get install fuse-overlayfs
+          mkdir -vp ~/.config/containers
+          printf "[storage.options]\nmount_program=\"/usr/bin/fuse-overlayfs\"" > ~/.config/containers/storage.conf
+      
       # Build image using Buildah action
       - name: Build Image
         id: build_image

@@ -2,7 +2,13 @@
 # is some change in code done to ensure that the changes
 # are not buggy and we are getting the desired output.
 name: Build
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
 env:
   PROJECT_DIR: spring-petclinic
   IMAGE_NAME: spring-petclinic
@@ -26,14 +32,14 @@ jobs:
         with:
           repository: "spring-projects/spring-petclinic"
           path: ${{ env.PROJECT_DIR }}
-      
+
       # If none of these files has changed, we assume that the contents of
       # .m2/repository can be fetched from the cache.
       - name: Hash Maven files
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           echo "MVN_HASH=${{ hashFiles('**/pom.xml', '.mvn/**/*', 'mvnw*') }}" >> $GITHUB_ENV
-      
+
       # Download the m2 repository from the cache to speed up the build.
       - name: Check for Maven cache
         id: check-mvn-cache
@@ -52,7 +58,7 @@ jobs:
       - name: Maven
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          mvn package -ntp -B 
+          mvn package -ntp -B
 
        # If there was no cache hit above, store the output into the cache now.
       - name: Save Maven repo into cache
@@ -61,7 +67,13 @@ jobs:
         with:
           path: ${{ env.MVN_REPO_DIR }}
           key: ${{ env.MVN_HASH }}
-      
+
+      # Workaround to fix https://github.com/containers/buildah/issues/3120
+      - run: |
+          sudo apt-get install fuse-overlayfs
+          mkdir -vp ~/.config/containers
+          printf "[storage.options]\nmount_program=\"/usr/bin/fuse-overlayfs\"" > ~/.config/containers/storage.conf
+
       # Build image using Buildah action
       - name: Build Image
         id: build_image
@@ -81,7 +93,7 @@ jobs:
           archs: amd64,arm64
 
       - name: Echo Outputs
-        run: | 
+        run: |
           echo "Image: ${{ steps.build_image.outputs.image }}"
           echo "Tags: ${{ steps.build_image.outputs.tags }}"
 
