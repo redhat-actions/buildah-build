@@ -73,7 +73,7 @@ jobs:
           sudo apt-get install fuse-overlayfs
           mkdir -vp ~/.config/containers
           printf "[storage.options]\nmount_program=\"/usr/bin/fuse-overlayfs\"" > ~/.config/containers/storage.conf
-      
+
       # Build image using Buildah action
       - name: Build Image
         id: build_image
