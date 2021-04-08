@@ -173,13 +173,18 @@ export class BuildahCli implements Buildah {
         };
 
         // To solve https://github.com/redhat-actions/buildah-build/issues/45
+        const execEnv: { [key: string] : string } = {};
+        Object.entries(process.env).forEach(([ key, value ]) => {
+            if (value != null) {
+                execEnv[key] = value;
+            }
+        });
 
         if (this.storageOptsEnv) {
-            finalExecOptions.env = {
-                ...process.env,
-                STORAGE_OPTS: this.storageOptsEnv,
-            };
+            execEnv.STORAGE_OPTS = this.storageOptsEnv;
         }
+
+        finalExecOptions.env = execEnv;
 
         const exitCode = await exec.exec(this.executable, args, finalExecOptions);
 
