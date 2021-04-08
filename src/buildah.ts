@@ -1,7 +1,9 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
+import * as io from "@actions/io";
 import * as path from "path";
 import CommandResult from "./types";
+import { checkStorageDriver } from "./utils";
 
 export interface BuildahConfigSettings {
     entrypoint?: string[];
@@ -25,8 +27,20 @@ interface Buildah {
 export class BuildahCli implements Buildah {
     private readonly executable: string;
 
+    public storageOptsEnv = "";
+
     constructor(executable: string) {
         this.executable = executable;
+    }
+
+    async checkFuseOverlayfs(): Promise<void> {
+        const fuseOverlayfsPath = await io.which("fuse-overlayfs");
+
+        if (fuseOverlayfsPath.startsWith("/usr/bin")) {
+            if (await checkStorageDriver()) {
+                this.storageOptsEnv = "overlay.mount_program=/usr/bin/fuse-overlayfs";
+            }
+        }
     }
 
     private static getImageFormatOption(useOCI: boolean): string[] {
@@ -157,6 +171,15 @@ export class BuildahCli implements Buildah {
                 stderr += line + "\n";
             },
         };
+
+        // To solve https://github.com/redhat-actions/buildah-build/issues/45
+
+        if (this.storageOptsEnv) {
+            finalExecOptions.env = {
+                ...process.env,
+                STORAGE_OPTS: this.storageOptsEnv,
+            };
+        }
 
         const exitCode = await exec.exec(this.executable, args, finalExecOptions);
 

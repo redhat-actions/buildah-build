@@ -16,6 +16,9 @@ export async function run(): Promise<void> {
     // print buildah version
     await cli.execute([ "version" ]);
 
+    // Check if fuse-overlayfs exists and find the storage driver
+    await cli.checkFuseOverlayfs();
+
     const DEFAULT_TAG = "latest";
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
     const dockerFiles = getInputList(Inputs.DOCKERFILES);

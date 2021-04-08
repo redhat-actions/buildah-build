@@ -68,12 +68,6 @@ jobs:
           path: ${{ env.MVN_REPO_DIR }}
           key: ${{ env.MVN_HASH }}
 
-      # Workaround to fix https://github.com/containers/buildah/issues/3120
-      - run: |
-          sudo apt-get install fuse-overlayfs
-          mkdir -vp ~/.config/containers
-          printf "[storage.options]\nmount_program=\"/usr/bin/fuse-overlayfs\"" > ~/.config/containers/storage.conf
-
       # Build image using Buildah action
       - name: Build Image
         id: build_image
