@@ -2,6 +2,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as path from "path";
 import CommandResult from "./types";
+import { isStorageDriverOverlay, findFuseOverlayfsPath } from "./utils";
 
 export interface BuildahConfigSettings {
     entrypoint?: string[];
@@ -25,8 +26,30 @@ interface Buildah {
 export class BuildahCli implements Buildah {
     private readonly executable: string;
 
+    public storageOptsEnv = "";
+
     constructor(executable: string) {
         this.executable = executable;
+    }
+
+    // Checks for storage driver if found "overlay",
+    // then checks if "fuse-overlayfs" is installed.
+    // If yes, add mount program to use "fuse-overlayfs"
+    async setStorageOptsEnv(): Promise<void> {
+        if (await isStorageDriverOverlay()) {
+            const fuseOverlayfsPath = await findFuseOverlayfsPath();
+            if (fuseOverlayfsPath) {
+                core.info(`Overriding storage mount_program with "fuse-overlayfs" in environment`);
+                this.storageOptsEnv = `overlay.mount_program=${fuseOverlayfsPath}`;
+            }
+            else {
+                core.warning(`"fuse-overlayfs" is not found. Install it before running this action. `
+                + `For more detail see https://github.com/redhat-actions/buildah-build/issues/45`);
+            }
+        }
+        else {
+            core.info("Storage driver is not 'overlay', so not overriding storage configuration");
+        }
     }
 
     private static getImageFormatOption(useOCI: boolean): string[] {
@@ -140,7 +163,10 @@ export class BuildahCli implements Buildah {
         return `${arrayAsString.slice(0, -1)}]`;
     }
 
-    async execute(args: string[], execOptions: exec.ExecOptions = {}): Promise<CommandResult> {
+    async execute(
+        args: string[],
+        execOptions: exec.ExecOptions & { group?: boolean } = {},
+    ): Promise<CommandResult> {
         // ghCore.info(`${EXECUTABLE} ${args.join(" ")}`)
 
         let stdout = "";
@@ -158,20 +184,47 @@ export class BuildahCli implements Buildah {
             },
         };
 
-        const exitCode = await exec.exec(this.executable, args, finalExecOptions);
-
-        if (execOptions.ignoreReturnCode !== true && exitCode !== 0) {
-            // Throwing the stderr as part of the Error makes the stderr
-            // show up in the action outline, which saves some clicking when debugging.
-            let error = `${path.basename(this.executable)} exited with code ${exitCode}`;
-            if (stderr) {
-                error += `\n${stderr}`;
-            }
-            throw new Error(error);
+        if (execOptions.group) {
+            const groupName = [ this.executable, ...args ].join(" ");
+            core.startGroup(groupName);
         }
 
-        return {
-            exitCode, output: stdout, error: stderr,
-        };
+        // To solve https://github.com/redhat-actions/buildah-build/issues/45
+        const execEnv: { [key: string] : string } = {};
+        Object.entries(process.env).forEach(([ key, value ]) => {
+            if (value != null) {
+                execEnv[key] = value;
+            }
+        });
+
+        if (this.storageOptsEnv) {
+            execEnv.STORAGE_OPTS = this.storageOptsEnv;
+        }
+
+        finalExecOptions.env = execEnv;
+
+        try {
+            const exitCode = await exec.exec(this.executable, args, finalExecOptions);
+
+            if (execOptions.ignoreReturnCode !== true && exitCode !== 0) {
+                // Throwing the stderr as part of the Error makes the stderr
+                // show up in the action outline, which saves some clicking when debugging.
+                let error = `${path.basename(this.executable)} exited with code ${exitCode}`;
+                if (stderr) {
+                    error += `\n${stderr}`;
+                }
+                throw new Error(error);
+            }
+
+            return {
+                exitCode, output: stdout, error: stderr,
+            };
+        }
+
+        finally {
+            if (execOptions.group) {
+                core.endGroup();
+            }
+        }
     }
 }
