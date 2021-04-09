@@ -1,9 +1,8 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
-import * as io from "@actions/io";
 import * as path from "path";
 import CommandResult from "./types";
-import { checkStorageDriver } from "./utils";
+import { isStorageDriverOverlay, findFuseOverlayfsPath } from "./utils";
 
 export interface BuildahConfigSettings {
     entrypoint?: string[];
@@ -33,12 +32,18 @@ export class BuildahCli implements Buildah {
         this.executable = executable;
     }
 
-    async checkFuseOverlayfs(): Promise<void> {
-        const fuseOverlayfsPath = await io.which("fuse-overlayfs");
-
-        if (fuseOverlayfsPath.startsWith("/usr/bin")) {
-            if (await checkStorageDriver()) {
-                this.storageOptsEnv = "overlay.mount_program=/usr/bin/fuse-overlayfs";
+    // Checks for storage driver if found "overlay",
+    // then checks if "fuse-overlayfs" is installed.
+    // If yes, add mount program to use "fuse-overlayfs"
+    async setStorageOptsEnv(): Promise<void> {
+        if (await isStorageDriverOverlay()) {
+            const fuseOverlayfsPath = await findFuseOverlayfsPath();
+            if (fuseOverlayfsPath) {
+                core.info(`Overriding storage mount_program with "fuse-overlayfs" in environment`);
+                this.storageOptsEnv = `overlay.mount_program=${fuseOverlayfsPath}`;
+            }
+            else {
+                core.warning(`"fuse-overlayfs" is not found. Install it before running this action`);
             }
         }
     }
