@@ -43,8 +43,12 @@ export class BuildahCli implements Buildah {
                 this.storageOptsEnv = `overlay.mount_program=${fuseOverlayfsPath}`;
             }
             else {
-                core.warning(`"fuse-overlayfs" is not found. Install it before running this action`);
+                core.warning(`"fuse-overlayfs" is not found. Install it before running this action.`
+                + `For more detail see https://github.com/redhat-actions/buildah-build/issues/45`);
             }
+        }
+        else {
+            core.info("Storage driver is not 'overlay', so not overriding storage configuration");
         }
     }
 

@@ -43,8 +43,8 @@ async function fileExists(filePath: string): Promise<boolean> {
     }
 }
 
-export async function findFuseOverlayfsPath(): Promise<string> {
-    let fuseOverlayfsPath = "";
+export async function findFuseOverlayfsPath(): Promise<string | undefined> {
+    let fuseOverlayfsPath;
     try {
         fuseOverlayfsPath = await io.which("fuse-overlayfs");
     }
