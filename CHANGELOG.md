@@ -1,5 +1,14 @@
 # buildah-build Changelog
 
+## v2.4
+- Fix buildah issue of using `overlay` as storage driver [6dbeb7e](https://github.com/redhat-actions/buildah-build/commit/6dbeb7e1f64c961b642625d54e551d296dafdd30)
+
+## v2.3.1
+- Fix issue of workDir not being used in the code [65f18d4](https://github.com/redhat-actions/buildah-build/commit/65f18d484c4278f73a530e03bfe9661649dc7615)
+
+## v2.3
+- Add Layers input for build using dockerfile [3196e5a](https://github.com/redhat-actions/buildah-build/commit/3196e5acb5dc5db144b00aeddd723de3d8604506)
+
 ## v2.2.1
 - Add note about multi architecture(s) image built support [1f7c249](https://github.com/redhat-actions/buildah-build/commit/1f7c2499306a8def9affb31cc7d43934bb87907d)
 
