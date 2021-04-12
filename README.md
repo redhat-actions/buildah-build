@@ -151,10 +151,16 @@ sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 ```
 
 ## Using private images
-If your build requires a private image, you have to `docker login` in a step before running this action.
+
+If your build requires a private image, use [**podman-login**](https://github.com/redhat-actions/podman-login) action in a step before running this action to authenticate to the container image registry.
 
 For example:
+
 ```yaml
 - name: Log in to Red Hat Registry
-  run: echo "${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}" | docker login registry.redhat.io -u "${{ secrets.REGISTRY_REDHAT_IO_USER }}" --password-stdin
+  uses: redhat-action/podman-login@v1
+  with:
+    registry: registry.redhat.io
+    username: ${{ secrets.REGISTRY_REDHAT_IO_USER }}
+    password: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
 ```
