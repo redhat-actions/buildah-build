@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.5
+- Add input `extra-args` to pass extra args to buildah bud for build image using dockerfile [2f7f68e](https://github.com/redhat-actions/buildah-build/commit/2f7f68ec840393890fca056f55d0140cf909c46d)
+
 ## v2.4.1
 - Update README to point to podman-login action [0c92abf](https://github.com/redhat-actions/buildah-build/commit/0c92abf30679c2b1b5329bacce9abbc3d3d94496)
 
