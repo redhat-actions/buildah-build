@@ -152,8 +152,7 @@ sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 ## Using private images
 
-If your build requires a private image, use [**podman-login**](https://github.com/redhat-actions/podman-login) action in a step before running this action to authenticate to the container image registry.
-
+If your build references a private image, run [**podman-login**](https://github.com/redhat-actions/podman-login) in a step before this action so you can pull the image.
 For example:
 
 ```yaml
