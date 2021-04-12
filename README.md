@@ -29,6 +29,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
+| extra-args | Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes. | None
 | image | Name to give to the output image. | **Must be provided**
 | layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`

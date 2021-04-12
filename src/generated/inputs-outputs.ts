@@ -50,6 +50,13 @@ export enum Inputs {
      */
     ENVS = "envs",
     /**
+     * Extra args to be passed to buildah bud.
+     * Separate arguments by newline. Do not use quotes - @actions/exec will do the quoting for you.
+     * Required: false
+     * Default: None.
+     */
+    EXTRA_ARGS = "extra-args",
+    /**
      * The name (reference) of the image to build
      * Required: true
      * Default: None.
