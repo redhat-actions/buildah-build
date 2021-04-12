@@ -1,8 +1,14 @@
+/***************************************************************************************************
+ *  Copyright (c) Red Hat, Inc. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE file in the project root for license information.
+ **************************************************************************************************/
+
 import * as core from "@actions/core";
 import * as io from "@actions/io";
 import * as path from "path";
 import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
+import { splitByNewline } from "./utils";
 
 export async function run(): Promise<void> {
     if (process.env.RUNNER_OS !== "Linux") {
@@ -65,7 +71,18 @@ async function doBuildUsingDockerFiles(
     const buildArgs = getInputList(Inputs.BUILD_ARGS);
     const dockerFileAbsPaths = dockerFiles.map((file) => path.join(workspace, file));
     const layers = core.getInput(Inputs.LAYERS);
-    await cli.buildUsingDocker(newImage, context, dockerFileAbsPaths, buildArgs, useOCI, archs, layers);
+
+    const inputExtraArgsStr = core.getInput(Inputs.EXTRA_ARGS);
+    let buildahBudExtraArgs: string[] = [];
+    if (inputExtraArgsStr) {
+        // transform the array of lines into an array of arguments
+        // by splitting over lines, then over spaces, then trimming.
+        const lines = splitByNewline(inputExtraArgsStr);
+        buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
+    }
+    await cli.buildUsingDocker(
+        newImage, context, dockerFileAbsPaths, buildArgs, useOCI, archs, layers, buildahBudExtraArgs
+    );
 }
 
 async function doBuildFromScratch(

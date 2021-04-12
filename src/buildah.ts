@@ -1,3 +1,8 @@
+/***************************************************************************************************
+ *  Copyright (c) Red Hat, Inc. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE file in the project root for license information.
+ **************************************************************************************************/
+
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as path from "path";
@@ -15,7 +20,7 @@ export interface BuildahConfigSettings {
 interface Buildah {
     buildUsingDocker(
         image: string, context: string, dockerFiles: string[], buildArgs: string[],
-        useOCI: boolean, archs: string, layers: string
+        useOCI: boolean, archs: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[]): Promise<CommandResult | undefined>;
@@ -58,7 +63,7 @@ export class BuildahCli implements Buildah {
 
     async buildUsingDocker(
         image: string, context: string, dockerFiles: string[], buildArgs: string[],
-        useOCI: boolean, archs: string, layers: string
+        useOCI: boolean, archs: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
         if (archs) {
@@ -76,6 +81,9 @@ export class BuildahCli implements Buildah {
         args.push(...BuildahCli.getImageFormatOption(useOCI));
         if (layers) {
             args.push(`--layers=${layers}`);
+        }
+        if (extraArgs.length > 0) {
+            args.push(...extraArgs);
         }
         args.push("-t");
         args.push(image);

@@ -41,6 +41,8 @@ jobs:
           tags: 'latest ${{ github.sha }}'
           dockerfiles: |
             ./Dockerfile
+          extra-args: |
+            --pull
 
       - name: Echo Outputs
         run: |
