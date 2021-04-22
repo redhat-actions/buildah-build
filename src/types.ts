@@ -3,10 +3,8 @@
  *  Licensed under the MIT License. See LICENSE file in the project root for license information.
  **************************************************************************************************/
 
-type CommandResult = {
+export type CommandResult = {
     exitCode: number
     output: string
     error: string
 };
-
-export default CommandResult;

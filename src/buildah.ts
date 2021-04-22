@@ -6,7 +6,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as path from "path";
-import CommandResult from "./types";
+import { CommandResult } from "./types";
 import { isStorageDriverOverlay, findFuseOverlayfsPath } from "./utils";
 
 export interface BuildahConfigSettings {
@@ -159,7 +159,7 @@ export class BuildahCli implements Buildah {
         for (const tag of tags) {
             args.push(`${imageName}:${tag}`);
         }
-        core.info(`Tagging the built image with tags ${tags.toString()}`);
+        core.info(`⏳ Tagging the built image with tags ${tags.toString()}`);
         return this.execute(args);
     }
 

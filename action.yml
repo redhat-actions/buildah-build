@@ -6,7 +6,9 @@ branding:
   color: red
 inputs:
   image:
-    description: 'The name (reference) of the image to build'
+    description:  |
+      'The name (reference) of the image to build. Image name should not contain any "/" i.e.
+      there is no need to provide image registry namespace.'
     required: true
   tags:
     description: 'The tags of the image to build. For multiple tags, seperate by a space. For example, "latest v1".'

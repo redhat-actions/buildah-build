@@ -57,7 +57,8 @@ export enum Inputs {
      */
     EXTRA_ARGS = "extra-args",
     /**
-     * The name (reference) of the image to build
+     * 'The name (reference) of the image to build. Image name should not contain any "/" i.e.
+     * there is no need to provide image registry namespace.'
      * Required: true
      * Default: None.
      */

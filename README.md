@@ -30,7 +30,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
 | extra-args | Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes. | None
-| image | Name to give to the output image. | **Must be provided**
+| image | Name to give to the output image. Image name should not contain any `/` i.e. there is no need to provide image registry namespace.| **Must be provided**
 | layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
@@ -46,7 +46,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
 | envs | The environment variables to be set when running the container. This is a multiline input to add multiple environment variables. | None
-| image | Name to give to the output image. | **Must be provided**
+| image | Name to give to the output image. Image name should not contain any `/` i.e. there is no need to provide image registry namespace.| **Must be provided**
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | port | The port to expose when running the container. | None
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`

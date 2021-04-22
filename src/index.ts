@@ -32,8 +32,15 @@ export async function run(): Promise<void> {
     const tags = core.getInput(Inputs.TAGS);
     const tagsList: string[] = tags.split(" ");
 
+    // check if image name doesn't have "/" in it
+    if (image.indexOf("/") > -1) {
+        throw new Error(`❌ Image ${image} contains "/" in it's name. `
+        + `Make sure that image doesn't have "/" in it's name or do not provide `
+        + `namespace with the image name`);
+    }
+
     // info message if user doesn't provides any tag
-    if (!tagsList.length) {
+    if (tagsList.length === 0) {
         core.info(`Input "${Inputs.TAGS}" is not provided, using default tag "${DEFAULT_TAG}"`);
         tagsList.push(DEFAULT_TAG);
     }
@@ -61,10 +68,10 @@ async function doBuildUsingDockerFiles(
     cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean, archs: string
 ): Promise<void> {
     if (dockerFiles.length === 1) {
-        core.info(`Performing build from Dockerfile`);
+        core.info(`⏳ Performing build from Dockerfile`);
     }
     else {
-        core.info(`Performing build from ${dockerFiles.length} Dockerfiles`);
+        core.info(`⏳ Performing build from ${dockerFiles.length} Dockerfiles`);
     }
 
     const context = path.join(workspace, core.getInput(Inputs.CONTEXT));
@@ -88,7 +95,7 @@ async function doBuildUsingDockerFiles(
 async function doBuildFromScratch(
     cli: BuildahCli, newImage: string, useOCI: boolean, archs: string
 ): Promise<void> {
-    core.info(`Performing build from scratch`);
+    core.info(`⏳ Performing build from scratch`);
 
     const baseImage = core.getInput(Inputs.BASE_IMAGE, { required: true });
     const content = getInputList(Inputs.CONTENT);
