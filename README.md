@@ -158,7 +158,7 @@ For example:
 
 ```yaml
 - name: Log in to Red Hat Registry
-  uses: redhat-action/podman-login@v1
+  uses: redhat-actions/podman-login@v1
   with:
     registry: registry.redhat.io
     username: ${{ secrets.REGISTRY_REDHAT_IO_USER }}
