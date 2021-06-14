@@ -25,7 +25,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer to [Multi arch builds](#multi-arch-builds) to setup the `qemu-user-static` dependency. | `amd64`
+| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer to [Multi arch builds](#multi-arch-builds) to setup the `qemu-user-static` dependency. | None (host architecture)
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
@@ -41,7 +41,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer to [Multi arch builds](#multi-arch-builds) to setup the `qemu-user-static` dependency. | `amd64`
+| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. | None (host architecture)
 | base-image | The base image to use for the container. | **Must be provided**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
@@ -146,10 +146,11 @@ jobs:
 
 ## Multi arch builds
 
-If building for an architecture other than `amd64`, install `qemu-user-static` using the following command.
+Cross-architecture builds from dockerfiles containing `RUN` instructions require `qemu-user-static` emulation registered in the Linux kernel. Run `sudo apt install -y qemu-user-static` on Debian-based container hosts. Or run the following registration command for other distributions:
 ```
-sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
+sudo podman run --rm --privileged docker.io/tonistiigi/binfmt --install all
 ```
+The registration remains active until the container host reboots.
 
 ## Using private images
 
