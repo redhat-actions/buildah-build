@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.5.2
+- Update README for multi-architecture builds
+
 ## v2.5.1
 - Fix README typo
 
