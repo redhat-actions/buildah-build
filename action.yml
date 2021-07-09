@@ -47,11 +47,11 @@ inputs:
     description: 'Set to true to build using the OCI image format instead of the Docker image format'
     default: 'false'
     required: false
+  arch:
+    description: 'Label the image with this ARCH, instead of defaulting to the host architecture.'
+    required: false
   archs:
-    description: |
-      Architecture(s) to build the image(s) for. For multiple architectures,
-      separate by a comma.
-    default: 'amd64'
+    description: 'Alias for "arch". "arch" takes precedence if both are set.'
     required: false
   extra-args:
     description: |

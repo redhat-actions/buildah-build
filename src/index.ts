@@ -33,21 +33,20 @@ export async function run(): Promise<void> {
     const tagsList: string[] = tags.split(" ");
 
     // info message if user doesn't provides any tag
-    if (!tagsList.length) {
+    if (tagsList.length === 0) {
         core.info(`Input "${Inputs.TAGS}" is not provided, using default tag "${DEFAULT_TAG}"`);
         tagsList.push(DEFAULT_TAG);
     }
     const newImage = `${image}:${tagsList[0]}`;
     const useOCI = core.getInput(Inputs.OCI) === "true";
-    let archs: string | undefined = core.getInput(Inputs.ARCHS);
-    // remove white spaces (if any) in archs input
-    archs = archs.replace(/\s+/g, "");
+
+    const arch = getArch();
 
     if (dockerFiles.length !== 0) {
-        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI, archs);
+        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI, arch);
     }
     else {
-        await doBuildFromScratch(cli, newImage, useOCI, archs);
+        await doBuildFromScratch(cli, newImage, useOCI, arch);
     }
 
     if (tagsList.length > 1) {
@@ -58,7 +57,7 @@ export async function run(): Promise<void> {
 }
 
 async function doBuildUsingDockerFiles(
-    cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean, archs: string
+    cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean, arch: string
 ): Promise<void> {
     if (dockerFiles.length === 1) {
         core.info(`Performing build from Dockerfile`);
@@ -81,12 +80,12 @@ async function doBuildUsingDockerFiles(
         buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
     }
     await cli.buildUsingDocker(
-        newImage, context, dockerFileAbsPaths, buildArgs, useOCI, archs, layers, buildahBudExtraArgs
+        newImage, context, dockerFileAbsPaths, buildArgs, useOCI, arch, layers, buildahBudExtraArgs
     );
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, useOCI: boolean, archs: string
+    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
@@ -107,7 +106,7 @@ async function doBuildFromScratch(
         port,
         workingdir: workingDir,
         envs,
-        archs,
+        arch,
     };
     await cli.config(containerId, newImageConfig);
     await cli.commit(containerId, newImage, useOCI);
@@ -125,6 +124,21 @@ function getInputList(name: string): string[] {
             (acc, line) => acc.concat(line).map((pat) => pat.trim()),
             [],
         );
+}
+
+function getArch(): string {
+    // 'arch' should be used over 'archs', see https://github.com/redhat-actions/buildah-build/issues/60
+    const archs = core.getInput(Inputs.ARCHS);
+    const arch = core.getInput(Inputs.ARCH);
+
+    if (arch && archs) {
+        core.warning(
+            `Please use only one input of "${Inputs.ARCH}" and "${Inputs.ARCHS}". "${Inputs.ARCH}" takes precedence, `
+            + `so --arch argument will be "${arch}".`
+        );
+    }
+
+    return arch || archs;
 }
 
 run().catch(core.setFailed);

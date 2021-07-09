@@ -25,7 +25,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. Refer to [Multi arch builds](#multi-arch-builds) to setup the `qemu-user-static` dependency. | None (host architecture)
+| arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
@@ -41,7 +41,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Architecture(s) to build the image(s) for. For multiple architectures, separate by a comma. | None (host architecture)
+| arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
 | base-image | The base image to use for the container. | **Must be provided**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
@@ -146,11 +146,31 @@ jobs:
 
 ## Multi arch builds
 
-Cross-architecture builds from dockerfiles containing `RUN` instructions require `qemu-user-static` emulation registered in the Linux kernel. Run `sudo apt install -y qemu-user-static` on Debian-based container hosts. Or run the following registration command for other distributions:
-```
+Refer to the [multi-arch example](./.github/workflows/multiarch.yml).
+
+### Emulating RUN instructions
+
+Cross-architecture builds from dockerfiles containing `RUN` instructions require `qemu-user-static` emulation registered in the Linux kernel.
+
+For example, run `sudo apt install qemu-user-static` on Debian hosts, or `sudo dnf install qemu-user-static` on Fedora.
+
+You can run a [containerized version of the registration](https://hub.docker.com/r/tonistiigi/binfmt) if the package does not exist for your distribution:
+```sh
 sudo podman run --rm --privileged docker.io/tonistiigi/binfmt --install all
 ```
-The registration remains active until the container host reboots.
+This registration remains active until the host reboots.
+
+### The `arch` input
+The `arch` argument overrides the Architecture label in the output image. It does not actually affect the architectures the output image will run on. The image must still be built for the required architecture.
+
+There is a simple example [in this issue](https://github.com/redhat-actions/buildah-build/issues/60#issuecomment-876552452).
+
+### Creating a Multi-Arch Image List
+Use the [buildah manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.md) command to bundle images into an image list, so multiple image can be referenced by the same repository tag.
+
+There are examples and explanations of the `manifest` command [in this issue](https://github.com/containers/buildah/issues/1590).
+
+This action does not support the `manifest` command at this time, but there is [an issue open](https://github.com/redhat-actions/buildah-build/issues/61).
 
 ## Using private images
 
