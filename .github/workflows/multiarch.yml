@@ -1,0 +1,71 @@
+name: Multiarch build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
+env:
+  IMAGE_NAME: hello-world-multiarch
+  IMAGE_TAG: latest
+
+jobs:
+  build:
+    name: Build image using Buildah
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ amd64, i386, arm64v8 ]
+    steps:
+
+      # Checkout buildah action github repository
+      - name: Checkout Buildah action
+        uses: actions/checkout@v2
+        with:
+          path: "buildah-build"
+
+      - name: Install qemu dependency
+        run: sudo apt-get install -y qemu-user-static
+
+      - name: Create Dockerfile
+        run: |
+          cat > Dockerfile<<EOF
+
+          ARG ARCH
+          FROM docker.io/\${ARCH}/alpine:3.14
+
+          RUN echo "hello world"
+
+          ENTRYPOINT [ "sh", "-c", "echo -n 'Machine: ' && uname -m && echo -n 'Bits: ' && getconf LONG_BIT && echo 'goodbye world'" ]
+          EOF
+
+      - name: Build Image
+        id: build_image
+        uses: ./buildah-build/
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAG }}
+          arch: ${{ matrix.arch }}
+          build-args: ARCH=${{ matrix.arch }}
+          dockerfiles: |
+            ./Dockerfile
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image.outputs.image }}"
+          echo "Tags: ${{ steps.build_image.outputs.tags }}"
+
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+      - name: Check image metadata
+        run: |
+          set -x
+          buildah inspect ${{ steps.build_image.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".OCIv1.architecture"
+          buildah inspect ${{ steps.build_image.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".Docker.architecture"
+
+      - name: Run image
+        run: |
+          podman run --rm ${{ steps.build_image.outputs.image }}:${{ env.IMAGE_TAG }}
