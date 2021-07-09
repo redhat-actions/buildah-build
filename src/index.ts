@@ -128,8 +128,8 @@ function getInputList(name: string): string[] {
 
 function getArch(): string {
     // 'arch' should be used over 'archs', see https://github.com/redhat-actions/buildah-build/issues/60
-    const archs = core.getInput(Inputs.ARCHS).replace(/\s+/g, "");
-    const arch = core.getInput(Inputs.ARCH).replace(/\s+/g, "");
+    const archs = core.getInput(Inputs.ARCHS);
+    const arch = core.getInput(Inputs.ARCH);
 
     if (arch && archs) {
         core.warning(
