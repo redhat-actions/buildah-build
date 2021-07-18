@@ -27,7 +27,9 @@ jobs:
           path: "buildah-build"
 
       - name: Install qemu dependency
-        run: sudo apt-get install -y qemu-user-static
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
 
       - name: Create Dockerfile
         run: |
