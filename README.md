@@ -21,7 +21,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 <a id="dockerfile-build-inputs"></a>
 
-### [Inputs for build from dockerfile](https://github.com/containers/buildah/blob/master/docs/buildah-bud.md)
+### [Inputs for build from dockerfile](https://github.com/containers/buildah/blob/main/docs/buildah-build.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
