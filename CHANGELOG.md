@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.6.1
+- Fix buildah-bud docs link in README
+
 ## v2.6
 - Rename "archs" input to "arch"
 - Improve documentation for multi-architecture builds
