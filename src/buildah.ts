@@ -19,7 +19,7 @@ export interface BuildahConfigSettings {
 
 interface Buildah {
     buildUsingDocker(
-        image: string, context: string, dockerFiles: string[], buildArgs: string[],
+        image: string, context: string, containerFiles: string[], buildArgs: string[],
         useOCI: boolean, arch: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
@@ -62,7 +62,7 @@ export class BuildahCli implements Buildah {
     }
 
     async buildUsingDocker(
-        image: string, context: string, dockerFiles: string[], buildArgs: string[],
+        image: string, context: string, containerFiles: string[], buildArgs: string[],
         useOCI: boolean, arch: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
@@ -70,7 +70,7 @@ export class BuildahCli implements Buildah {
             args.push("--arch");
             args.push(arch);
         }
-        dockerFiles.forEach((file) => {
+        containerFiles.forEach((file) => {
             args.push("-f");
             args.push(file);
         });

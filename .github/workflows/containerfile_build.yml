@@ -1,7 +1,7 @@
 # This workflow will perform a test whenever there
 # is some change in code done to ensure that the changes
 # are not buggy and we are getting the desired output.
-name: Build from dockerfile
+name: Build from containerfile
 on:
   push:
   pull_request:
@@ -36,7 +36,7 @@ jobs:
 
       - name: Create Dockerfile
         run: |
-          cat > Dockerfile<<EOF
+          cat > Containerfile<<EOF
           FROM busybox
           RUN echo "hello world"
           EOF
@@ -49,8 +49,8 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           layers: false
           tags: 'latest ${{ github.sha }}'
-          dockerfiles: |
-            ./Dockerfile
+          containerfiles: |
+            ./Containerfile
           extra-args: |
             --pull
 
