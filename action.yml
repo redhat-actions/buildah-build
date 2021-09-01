@@ -63,6 +63,8 @@ outputs:
     description: 'Name of the image built'
   tags:
     description: 'List of the tags that were created, separated by spaces'
+  image-with-tag:
+    description: 'Name of the image tagged with the first tag present'
 runs:
   using: 'node12'
   main: 'dist/index.js'

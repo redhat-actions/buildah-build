@@ -107,6 +107,12 @@ export enum Outputs {
      */
     IMAGE = "image",
     /**
+     * Name of the image tagged with the first tag present
+     * Required: false
+     * Default: None.
+     */
+    IMAGE_WITH_TAG = "image-with-tag",
+    /**
      * List of the tags that were created, separated by spaces
      * Required: false
      * Default: None.

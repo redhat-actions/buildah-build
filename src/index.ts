@@ -54,6 +54,7 @@ export async function run(): Promise<void> {
     }
     core.setOutput(Outputs.IMAGE, image);
     core.setOutput(Outputs.TAGS, tags);
+    core.setOutput(Outputs.IMAGE_WITH_TAG, `${image}:${tagsList[0]}`);
 }
 
 async function doBuildUsingDockerFiles(
