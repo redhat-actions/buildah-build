@@ -23,8 +23,8 @@ interface Buildah {
         useOCI: boolean, arch: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
-    copy(container: string, contentToCopy: string[]): Promise<CommandResult | undefined>;
     config(container: string, setting: BuildahConfigSettings): Promise<CommandResult>;
+    copy(container: string, contentToCopy: string[]): Promise<CommandResult | undefined>;
     commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult>;
 }
 

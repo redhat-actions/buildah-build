@@ -99,8 +99,6 @@ async function doBuildFromScratch(
     const container = await cli.from(baseImage);
     const containerId = container.output.replace("\n", "");
 
-    await cli.copy(containerId, content);
-
     const newImageConfig: BuildahConfigSettings = {
         entrypoint,
         port,
@@ -109,6 +107,7 @@ async function doBuildFromScratch(
         arch,
     };
     await cli.config(containerId, newImageConfig);
+    await cli.copy(containerId, content);
     await cli.commit(containerId, newImage, useOCI);
 }
 
