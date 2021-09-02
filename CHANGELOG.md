@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.6.2
+- Run `buildah config` command before `buildah copy` command to use `workingDir` for copying
+
 ## v2.6.1
 - Fix buildah-bud docs link in README
 
