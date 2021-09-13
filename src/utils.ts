@@ -72,8 +72,9 @@ export function getArch(): string {
 
     if (arch && archs) {
         core.warning(
-            `Please use only one input of "${Inputs.ARCH}" and "${Inputs.ARCHS}". "${Inputs.ARCH}" takes precedence, `
-            + `so --arch argument will be "${arch}".`
+            `Both "${Inputs.ARCH}" and "${Inputs.ARCHS}" inputs are set. `
+            + `Please use only one of these two inputs, as they are aliases of one another. `
+            + `"${Inputs.ARCH}" takes precedence.`
         );
     }
 
@@ -88,8 +89,9 @@ export function getContainerfiles(): string[] {
 
     if (containerfiles.length !== 0 && dockerfiles.length !== 0) {
         core.warning(
-            `Please use only one input of "${Inputs.CONTAINERFILES}" and "${Inputs.DOCKERFILES}". `
-            + `"${Inputs.CONTAINERFILES}" takes precedence, `
+            `Both "${Inputs.CONTAINERFILES}" and "${Inputs.DOCKERFILES}" inputs are set. `
+            + `Please use only one of these two inputs, as they are aliases of one another. `
+            + `"${Inputs.CONTAINERFILES}" takes precedence.`
         );
     }
 
@@ -101,11 +103,11 @@ export function getInputList(name: string): string[] {
     if (!items) {
         return [];
     }
-    return items
-        .split(/\r?\n/)
+    const splitItems = splitByNewline(items);
+    return splitItems
         .filter((x) => x)
         .reduce<string[]>(
-            (acc, line) => acc.concat(line).map((pat) => pat.trim()),
+            (acc, line) => acc.concat(line).map((item) => item.trim()),
             [],
         );
 }
