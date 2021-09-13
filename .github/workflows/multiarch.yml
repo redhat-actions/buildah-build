@@ -21,22 +21,17 @@ jobs:
         install_latest: [ true, false ]
 
     steps:
-      - name: Install latest buildah
-        if: matrix.install_latest
-        # https://github.com/containers/buildah/blob/main/install.md
-        run: |
-          . /etc/os-release
-          sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${ID^}_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
-          wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${ID^}_${VERSION_ID}/Release.key -O Release.key
-          sudo apt-key add - < Release.key
-          sudo apt-get update -qq
-          sudo apt-get -qq -y install buildah
 
       # Checkout buildah action github repository
       - name: Checkout Buildah action
         uses: actions/checkout@v2
         with:
           path: "buildah-build"
+
+      - name: Install latest buildah
+        if: matrix.install_latest
+        run: |
+          bash buildah-build/.github/install_latest_buildah.sh
 
       - name: Install qemu dependency
         run: |
