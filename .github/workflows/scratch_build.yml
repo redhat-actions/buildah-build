@@ -18,6 +18,11 @@ jobs:
   build:
     name: Build image using Buildah
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        install_latest: [ true, false ]
+
     steps:
 
       # Checkout buildah action github repository
@@ -25,6 +30,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: "buildah-build"
+
+      - name: Install latest buildah
+        if: matrix.install_latest
+        run: |
+          bash buildah-build/.github/install_latest_buildah.sh
 
       # Checkout spring-petclinic github repository
       - name: Checkout spring-petclinic project
