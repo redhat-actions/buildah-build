@@ -63,7 +63,7 @@ For example, `spring-image`.
 For example, `latest ${{ github.sha }}`.
 
 `image-with-tag`: The name of the image tagged with the first tag present.<br>
-For example, `spring-image:v1`
+For example, `spring-image:latest`
 
 <a id="build-types"></a>
 
