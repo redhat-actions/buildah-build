@@ -101,6 +101,7 @@ jobs:
         run: |
           echo "Image: ${{ steps.build_image.outputs.image }}"
           echo "Tags: ${{ steps.build_image.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image.outputs.image-with-tag }}"
 
       # Check if image is build
       - name: Check images created

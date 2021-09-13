@@ -62,6 +62,9 @@ For example, `spring-image`.
 `tags`: A list of the tags that were created, separated by spaces.<br>
 For example, `latest ${{ github.sha }}`.
 
+`image-with-tag`: The name of the image tagged with the first tag present.<br>
+For example, `spring-image:latest`
+
 <a id="build-types"></a>
 
 ## Build Types
