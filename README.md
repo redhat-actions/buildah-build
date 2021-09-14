@@ -34,7 +34,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
-> *Input `containerfiles` was previously `dockerfiles`. Now input `dockerfiles` is supported alias of `containerfiles`. For details see the [linked issue](https://github.com/redhat-actions/buildah-build/issues/57).
+> *The `containerfiles` input was previously `dockerfiles`. Now `dockerfiles` is an alias for `containerfiles`. For details see [the issue](https://github.com/redhat-actions/buildah-build/issues/57).
 
 <a id="scratch-build-inputs"></a>
 

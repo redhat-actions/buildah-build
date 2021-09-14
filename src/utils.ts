@@ -105,7 +105,6 @@ export function getInputList(name: string): string[] {
     }
     const splitItems = splitByNewline(items);
     return splitItems
-        .filter((x) => x)
         .reduce<string[]>(
             (acc, line) => acc.concat(line).map((item) => item.trim()),
             [],
