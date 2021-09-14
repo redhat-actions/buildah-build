@@ -8,7 +8,9 @@ import * as io from "@actions/io";
 import * as path from "path";
 import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
-import { splitByNewline } from "./utils";
+import {
+    getArch, getContainerfiles, getInputList, splitByNewline,
+} from "./utils";
 
 export async function run(): Promise<void> {
     if (process.env.RUNNER_OS !== "Linux") {
@@ -27,7 +29,7 @@ export async function run(): Promise<void> {
 
     const DEFAULT_TAG = "latest";
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-    const dockerFiles = getInputList(Inputs.DOCKERFILES);
+    const containerFiles = getContainerfiles();
     const image = core.getInput(Inputs.IMAGE, { required: true });
     const tags = core.getInput(Inputs.TAGS);
     const tagsList: string[] = tags.split(" ");
@@ -42,8 +44,8 @@ export async function run(): Promise<void> {
 
     const arch = getArch();
 
-    if (dockerFiles.length !== 0) {
-        await doBuildUsingDockerFiles(cli, newImage, workspace, dockerFiles, useOCI, arch);
+    if (containerFiles.length !== 0) {
+        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI, arch);
     }
     else {
         await doBuildFromScratch(cli, newImage, useOCI, arch);
@@ -57,19 +59,19 @@ export async function run(): Promise<void> {
     core.setOutput(Outputs.IMAGE_WITH_TAG, `${image}:${tagsList[0]}`);
 }
 
-async function doBuildUsingDockerFiles(
-    cli: BuildahCli, newImage: string, workspace: string, dockerFiles: string[], useOCI: boolean, arch: string
+async function doBuildUsingContainerFiles(
+    cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, arch: string
 ): Promise<void> {
-    if (dockerFiles.length === 1) {
-        core.info(`Performing build from Dockerfile`);
+    if (containerFiles.length === 1) {
+        core.info(`Performing build from Containerfile`);
     }
     else {
-        core.info(`Performing build from ${dockerFiles.length} Dockerfiles`);
+        core.info(`Performing build from ${containerFiles.length} Containerfiles`);
     }
 
     const context = path.join(workspace, core.getInput(Inputs.CONTEXT));
     const buildArgs = getInputList(Inputs.BUILD_ARGS);
-    const dockerFileAbsPaths = dockerFiles.map((file) => path.join(workspace, file));
+    const containerFileAbsPaths = containerFiles.map((file) => path.join(workspace, file));
     const layers = core.getInput(Inputs.LAYERS);
 
     const inputExtraArgsStr = core.getInput(Inputs.EXTRA_ARGS);
@@ -81,7 +83,7 @@ async function doBuildUsingDockerFiles(
         buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
     }
     await cli.buildUsingDocker(
-        newImage, context, dockerFileAbsPaths, buildArgs, useOCI, arch, layers, buildahBudExtraArgs
+        newImage, context, containerFileAbsPaths, buildArgs, useOCI, arch, layers, buildahBudExtraArgs
     );
 }
 
@@ -110,35 +112,6 @@ async function doBuildFromScratch(
     await cli.config(containerId, newImageConfig);
     await cli.copy(containerId, content);
     await cli.commit(containerId, newImage, useOCI);
-}
-
-function getInputList(name: string): string[] {
-    const items = core.getInput(name);
-    if (!items) {
-        return [];
-    }
-    return items
-        .split(/\r?\n/)
-        .filter((x) => x)
-        .reduce<string[]>(
-            (acc, line) => acc.concat(line).map((pat) => pat.trim()),
-            [],
-        );
-}
-
-function getArch(): string {
-    // 'arch' should be used over 'archs', see https://github.com/redhat-actions/buildah-build/issues/60
-    const archs = core.getInput(Inputs.ARCHS);
-    const arch = core.getInput(Inputs.ARCH);
-
-    if (arch && archs) {
-        core.warning(
-            `Please use only one input of "${Inputs.ARCH}" and "${Inputs.ARCHS}". "${Inputs.ARCH}" takes precedence, `
-            + `so --arch argument will be "${arch}".`
-        );
-    }
-
-    return arch || archs;
 }
 
 run().catch(core.setFailed);

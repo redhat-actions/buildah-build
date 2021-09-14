@@ -1,7 +1,7 @@
 # buildah-build
 [![CI checks](https://github.com/redhat-actions/buildah-build/workflows/CI%20checks/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22CI+checks%22)
 [![Build](https://github.com/redhat-actions/buildah-build/workflows/Build/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3ABuild)
-[![Build from dockerfile](https://github.com/redhat-actions/buildah-build/workflows/Build%20from%20dockerfile/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Build+from+dockerfile%22)
+[![Build from containerfile](https://github.com/redhat-actions/buildah-build/workflows/Build%20from%20containerfile/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Build+from+containerfile%22)
 [![Link checker](https://github.com/redhat-actions/buildah-build/workflows/Link%20checker/badge.svg)](https://github.com/redhat-actions/buildah-build/actions?query=workflow%3A%22Link+checker%22)
 <br>
 <br>
@@ -21,23 +21,24 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 <a id="dockerfile-build-inputs"></a>
 
-### [Inputs for build from dockerfile](https://github.com/containers/buildah/blob/main/docs/buildah-build.md)
+### [Inputs for build from containerfile](https://github.com/containers/buildah/blob/main/docs/buildah-build.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
 | arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
-| build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Dockerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
+| build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
-| dockerfiles | The list of Dockerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Dockerfiles. | **Must be provided**
+| containerfiles* | The list of Containerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Containerfiles. | **Must be provided**
 | extra-args | Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes. | None
 | image | Name to give to the output image. | **Must be provided**
 | layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
+> *The `containerfiles` input was previously `dockerfiles`. Now `dockerfiles` is an alias for `containerfiles`. For details see [the issue](https://github.com/redhat-actions/buildah-build/issues/57).
 
 <a id="scratch-build-inputs"></a>
 
-### [Inputs for build without dockerfile](https://github.com/containers/buildah/blob/master/docs/buildah-config.md)
+### [Inputs for build without containerfile](https://github.com/containers/buildah/blob/master/docs/buildah-config.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
@@ -69,18 +70,18 @@ For example, `spring-image:latest`
 
 ## Build Types
 
-You can configure the `buildah` action to build your image using one or more Dockerfiles, or none at all.
+You can configure the `buildah` action to build your image using one or more Containerfiles, or none at all.
 
 <a id="build-using-dockerfile"></a>
 
-### Building using Dockerfiles
+### Building using Containerfiles
 
-If you have been building your images with an existing Dockerfile, `buildah` can reuse your Dockerfile.
+If you have been building your images with an existing Containerfile, `buildah` can reuse your Containerfile.
 
-In this case the inputs needed are `image` and `dockerfiles`. `tag` is also recommended. If your Dockerfile requires ARGs, these can be passed using `build-arg`.
+In this case the inputs needed are `image` and `containerfiles`. `tag` is also recommended. If your Containerfile requires ARGs, these can be passed using `build-arg`.
 
 ```yaml
-name: Build Image using Dockerfile
+name: Build Image using Containerfile
 on: [push]
 
 jobs:
@@ -96,26 +97,26 @@ jobs:
       with:
         image: my-new-image
         tags: v1 ${{ github.sha }}
-        dockerfiles: |
-          ./Dockerfile
+        containerfiles: |
+          ./Containerfile
         build-args: |
           some_arg=some_value
 ```
 <a id="scratch-build"></a>
 
-### Building without a Dockerfile
+### Building without a Containerfile
 
-Building without a Dockerfile requires additional inputs, that would normally be specified in the Dockerfile.
+Building without a Containerfile requires additional inputs, that would normally be specified in the Containerfile.
 
-Do not set `dockerfiles` if you are doing a build from scratch. Otherwise those Dockerfiles will be used, and the inputs below will be ignored.
+Do not set `containerfiles` if you are doing a build from scratch. Otherwise those Containerfiles will be used, and the inputs below will be ignored.
 
 - An output `image` name and usually a `tag`.
 - `base-image`
-  - In a Dockerfile, this would be the `FROM` directive.
+  - In a Containerfile, this would be the `FROM` directive.
 - `content` to copy into the new image
-  - In a Dockerfile, this would be `COPY` directives.
+  - In a Containerfile, this would be `COPY` directives.
 - `entrypoint` so the container knows what command to run.
-  - In a Dockerfile, this would be the `ENTRYPOINT`.
+  - In a Containerfile, this would be the `ENTRYPOINT`.
 - All other optional configuration inputs, such as `port`, `envs`, and `workdir`.
 
 Example of building a Spring Boot Java app image:
@@ -125,7 +126,7 @@ on: [push]
 
 jobs:
   build-image:
-    name: Build image without Dockerfile
+    name: Build image without Containerfile
     runs-on: ubuntu-latest
 
     steps:
@@ -153,7 +154,7 @@ Refer to the [multi-arch example](./.github/workflows/multiarch.yml).
 
 ### Emulating RUN instructions
 
-Cross-architecture builds from dockerfiles containing `RUN` instructions require `qemu-user-static` emulation registered in the Linux kernel.
+Cross-architecture builds from containerfiles containing `RUN` instructions require `qemu-user-static` emulation registered in the Linux kernel.
 
 For example, run `sudo apt install qemu-user-static` on Debian hosts, or `sudo dnf install qemu-user-static` on Fedora.
 

@@ -1,5 +1,5 @@
 name: 'Buildah Build'
-description: 'Build a container image, with or without a Dockerfile'
+description: 'Build a container image, with or without a Containerfile'
 author: 'Red Hat'
 branding:
   icon: circle
@@ -15,8 +15,11 @@ inputs:
   base-image:
     description: 'The base image to use to create a new container image'
     required: false
+  containerfiles:
+    description: 'List of Containerfile paths (eg: ./Containerfile)'
+    required: false
   dockerfiles:
-    description: 'List of Dockerfile paths (eg: ./Dockerfile)'
+    description: 'Alias for "containerfiles". "containerfiles" takes precedence if both are set.'
     required: false
   context:
     description: 'Path of the directory to use as context (default: .)'

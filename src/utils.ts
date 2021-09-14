@@ -9,6 +9,7 @@ import * as core from "@actions/core";
 import * as path from "path";
 import * as io from "@actions/io";
 import * as os from "os";
+import { Inputs } from "./generated/inputs-outputs";
 
 async function findStorageDriver(filePaths: string[]): Promise<string> {
     let storageDriver = "";
@@ -62,4 +63,50 @@ export async function findFuseOverlayfsPath(): Promise<string | undefined> {
 
 export function splitByNewline(s: string): string[] {
     return s.split(/\r?\n/);
+}
+
+export function getArch(): string {
+    // 'arch' should be used over 'archs', see https://github.com/redhat-actions/buildah-build/issues/60
+    const archs = core.getInput(Inputs.ARCHS);
+    const arch = core.getInput(Inputs.ARCH);
+
+    if (arch && archs) {
+        core.warning(
+            `Both "${Inputs.ARCH}" and "${Inputs.ARCHS}" inputs are set. `
+            + `Please use only one of these two inputs, as they are aliases of one another. `
+            + `"${Inputs.ARCH}" takes precedence.`
+        );
+    }
+
+    return arch || archs;
+}
+
+export function getContainerfiles(): string[] {
+    // 'containerfile' should be used over 'dockerfile',
+    // see https://github.com/redhat-actions/buildah-build/issues/57
+    const containerfiles = getInputList(Inputs.CONTAINERFILES);
+    const dockerfiles = getInputList(Inputs.DOCKERFILES);
+
+    if (containerfiles.length !== 0 && dockerfiles.length !== 0) {
+        core.warning(
+            `Both "${Inputs.CONTAINERFILES}" and "${Inputs.DOCKERFILES}" inputs are set. `
+            + `Please use only one of these two inputs, as they are aliases of one another. `
+            + `"${Inputs.CONTAINERFILES}" takes precedence.`
+        );
+    }
+
+    return containerfiles.length !== 0 ? containerfiles : dockerfiles;
+}
+
+export function getInputList(name: string): string[] {
+    const items = core.getInput(name);
+    if (!items) {
+        return [];
+    }
+    const splitItems = splitByNewline(items);
+    return splitItems
+        .reduce<string[]>(
+            (acc, line) => acc.concat(line).map((item) => item.trim()),
+            [],
+        );
 }

@@ -25,6 +25,12 @@ export enum Inputs {
      */
     BUILD_ARGS = "build-args",
     /**
+     * List of Containerfile paths (eg: ./Containerfile)
+     * Required: false
+     * Default: None.
+     */
+    CONTAINERFILES = "containerfiles",
+    /**
      * List of files/directories to copy inside the base image
      * Required: false
      * Default: None.
@@ -37,7 +43,7 @@ export enum Inputs {
      */
     CONTEXT = "context",
     /**
-     * List of Dockerfile paths (eg: ./Dockerfile)
+     * Alias for "containerfiles". "containerfiles" takes precedence if both are set.
      * Required: false
      * Default: None.
      */
