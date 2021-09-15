@@ -1,4 +1,8 @@
 # buildah-build Changelog
+## v2.7
+- Add output `image-with-tag` which provides image name and it's corresponding first tag present.
+- Replace input `dockerfiles` with `containerfiles`. Input `dockerfiles` will be present as alias of `containerfiles`.
+- Add matrix to install latest buildah. (Internal)
 
 ## v2.6.2
 - Run `buildah config` command before `buildah copy` command to use `workingDir` for copying
