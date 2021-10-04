@@ -21,7 +21,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 <a id="dockerfile-build-inputs"></a>
 
-### [Inputs for build from containerfile](https://github.com/containers/buildah/blob/main/docs/buildah-build.md)
+### [Inputs for build from containerfile](https://github.com/containers/buildah/blob/main/docs/buildah-build.1.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
@@ -38,7 +38,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 <a id="scratch-build-inputs"></a>
 
-### [Inputs for build without containerfile](https://github.com/containers/buildah/blob/master/docs/buildah-config.md)
+### [Inputs for build without containerfile](https://github.com/containers/buildah/blob/main/docs/buildah-config.1.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
@@ -170,7 +170,7 @@ The `arch` argument overrides the Architecture label in the output image. It doe
 There is a simple example [in this issue](https://github.com/redhat-actions/buildah-build/issues/60#issuecomment-876552452).
 
 ### Creating a Multi-Arch Image List
-Use the [buildah manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.md) command to bundle images into an image list, so multiple image can be referenced by the same repository tag.
+Use the [buildah manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) command to bundle images into an image list, so multiple image can be referenced by the same repository tag.
 
 There are examples and explanations of the `manifest` command [in this issue](https://github.com/containers/buildah/issues/1590).
 
