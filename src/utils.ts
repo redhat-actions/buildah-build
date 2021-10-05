@@ -81,6 +81,10 @@ export function getArch(): string {
     return arch || archs;
 }
 
+export function getPlatform(): string {
+    return core.getInput(Inputs.PLATFORM);
+}
+
 export function getContainerfiles(): string[] {
     // 'containerfile' should be used over 'dockerfile',
     // see https://github.com/redhat-actions/buildah-build/issues/57

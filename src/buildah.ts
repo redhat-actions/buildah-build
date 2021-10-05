@@ -15,12 +15,13 @@ export interface BuildahConfigSettings {
     port?: string;
     workingdir?: string;
     arch?: string;
+    platform?: string;
 }
 
 interface Buildah {
     buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
-        useOCI: boolean, arch: string, layers: string, extraArgs: string[]
+        useOCI: boolean, arch: string, platform: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
     config(container: string, setting: BuildahConfigSettings): Promise<CommandResult>;
@@ -63,12 +64,16 @@ export class BuildahCli implements Buildah {
 
     async buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
-        useOCI: boolean, arch: string, layers: string, extraArgs: string[]
+        useOCI: boolean, arch: string, platform: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
         if (arch) {
             args.push("--arch");
             args.push(arch);
+        }
+        if (platform) {
+            args.push("--platform");
+            args.push(platform);
         }
         containerFiles.forEach((file) => {
             args.push("-f");
@@ -134,6 +139,10 @@ export class BuildahCli implements Buildah {
         if (settings.arch) {
             args.push("--arch");
             args.push(settings.arch);
+        }
+        if (settings.platform) {
+            args.push("--platform");
+            args.push(settings.platform);
         }
         if (settings.workingdir) {
             args.push("--workingdir");
