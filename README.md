@@ -26,6 +26,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
 | arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
+| platform | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host platform)
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | containerfiles* | The list of Containerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Containerfiles. | **Must be provided**
@@ -43,6 +44,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
 | arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
+| platform | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host platform)
 | base-image | The base image to use for the container. | **Must be provided**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
@@ -164,8 +166,8 @@ sudo podman run --rm --privileged docker.io/tonistiigi/binfmt --install all
 ```
 This registration remains active until the host reboots.
 
-### The `arch` input
-The `arch` argument overrides the Architecture label in the output image. It does not actually affect the architectures the output image will run on. The image must still be built for the required architecture.
+### The `arch` and `platform` inputs
+The `arch` and `platform` arguments override the Architecture and Platform labels in the output image, respectively. They do not actually affect the architectures and platforms the output image will run on. The image must still be built for the required architecture or platform.
 
 There is a simple example [in this issue](https://github.com/redhat-actions/buildah-build/issues/60#issuecomment-876552452).
 
