@@ -13,12 +13,6 @@ export enum Inputs {
      */
     ARCHS = "archs",
     /**
-     * Label the image with this PLATFORM, instead of defaulting to the host platform.
-     * Required: false
-     * Default: None.
-     */
-    PLATFORM = "platform",
-    /**
      * The base image to use to create a new container image
      * Required: false
      * Default: None.
@@ -91,6 +85,12 @@ export enum Inputs {
      * Default: "false"
      */
     OCI = "oci",
+    /**
+     * Label the image with this PLATFORM, instead of defaulting to the host platform.
+     * Required: false
+     * Default: None.
+     */
+    PLATFORM = "platform",
     /**
      * The port to expose when running containers based on image
      * Required: false
