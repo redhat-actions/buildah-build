@@ -1,0 +1,78 @@
+# This workflow will perform a test whenever there
+# is some change in code done to ensure that the changes
+# are not buggy and we are getting the desired output.
+name: Build with docker/metadata-action@v2
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
+env:
+  IMAGE_NAME: "hello-world"
+
+jobs:
+  build:
+    name: Build image using Buildah
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        install_latest: [ true, false ]
+
+    steps:
+
+      # Checkout buildah action github repository
+      - name: Checkout Buildah action
+        uses: actions/checkout@v2
+
+      - name: Docker Metadata
+        id: docker-metadata
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            ${{ env.IMAGE_NAME }}
+          tags: |
+            type=edge
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+            type=schedule
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+
+      - name: Install latest buildah
+        if: matrix.install_latest
+        run: |
+          bash .github/install_latest_buildah.sh
+
+      - name: Create Dockerfile
+        run: |
+          cat > Containerfile<<EOF
+          FROM busybox
+          RUN echo "hello world"
+          EOF
+
+      # Build image using Buildah action
+      - name: Build Image
+        id: build_image
+        uses: ./
+        with:
+          layers: false
+          tags: ${{ steps.docker-metadata.outputs.tags }}
+          containerfiles: |
+            ./Containerfile
+          extra-args: |
+            --pull
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image.outputs.image }}"
+          echo "Tags: ${{ steps.build_image.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image.outputs.image-with-tag }}"
+
+      # Check if image is build
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'

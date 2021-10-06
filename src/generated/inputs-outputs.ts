@@ -69,7 +69,7 @@ export enum Inputs {
     EXTRA_ARGS = "extra-args",
     /**
      * The name (reference) of the image to build
-     * Required: true
+     * Required: false
      * Default: None.
      */
     IMAGE = "image",
@@ -92,7 +92,7 @@ export enum Inputs {
      */
     PORT = "port",
     /**
-     * The tags of the image to build. For multiple tags, seperate by a space. For example, "latest v1".
+     * The tags of the image to build. For multiple tags, seperate by whitespace. For example, "latest v1".
      * Required: false
      * Default: "latest"
      */

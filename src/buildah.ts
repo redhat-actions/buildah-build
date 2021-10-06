@@ -7,7 +7,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as path from "path";
 import CommandResult from "./types";
-import { isStorageDriverOverlay, findFuseOverlayfsPath } from "./utils";
+import { isStorageDriverOverlay, findFuseOverlayfsPath, getFullImageName } from "./utils";
 
 export interface BuildahConfigSettings {
     entrypoint?: string[];
@@ -157,7 +157,7 @@ export class BuildahCli implements Buildah {
     async tag(imageName: string, tags: string[]): Promise<CommandResult> {
         const args: string[] = [ "tag" ];
         for (const tag of tags) {
-            args.push(`${imageName}:${tag}`);
+            args.push(getFullImageName(imageName, tag));
         }
         core.info(`Tagging the built image with tags ${tags.toString()}`);
         return this.execute(args);

@@ -7,9 +7,9 @@ branding:
 inputs:
   image:
     description: 'The name (reference) of the image to build'
-    required: true
+    required: false
   tags:
-    description: 'The tags of the image to build. For multiple tags, seperate by a space. For example, "latest v1".'
+    description: 'The tags of the image to build. For multiple tags, seperate by whitespace. For example, "latest v1".'
     required: false
     default: latest
   base-image:
