@@ -186,6 +186,10 @@ export class BuildahCli implements Buildah {
     ): Promise<CommandResult> {
         // ghCore.info(`${EXECUTABLE} ${args.join(" ")}`)
 
+        if (args.arch && args.platform) {
+            throw new Error("The --platform option may not be used in combination with the --arch option.");
+        }
+
         let stdout = "";
         let stderr = "";
 
