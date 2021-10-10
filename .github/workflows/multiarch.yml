@@ -19,6 +19,7 @@ jobs:
       matrix:
         arch: [ amd64, i386, arm64v8 ]
         install_latest: [ true, false ]
+        specify_platform: [ false, true ]
 
     steps:
 
@@ -38,7 +39,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
 
-      - name: Create Containerfile
+      - name: Create Containerfile (arch=${{ matrix.arch }})
+        if: !matrix.specify_platform
         run: |
           cat > Containerfile<<EOF
 
@@ -50,7 +52,20 @@ jobs:
           ENTRYPOINT [ "sh", "-c", "echo -n 'Machine: ' && uname -m && echo -n 'Bits: ' && getconf LONG_BIT && echo 'goodbye world'" ]
           EOF
 
-      - name: Build Image
+      - name: Create Containerfile (platform=linux/${{ matrix.arch }})
+        if: matrix.specify_platform
+        run: |
+          cat > Containerfile<<EOF
+
+          FROM docker.io/alpine:3.14
+
+          RUN echo "hello world"
+
+          ENTRYPOINT [ "sh", "-c", "echo -n 'Machine: ' && uname -m && echo -n 'Bits: ' && getconf LONG_BIT && echo 'goodbye world'" ]
+          EOF
+
+      - name: Build Image (arch=${{ matrix.arch }})
+        if: !matrix.specify_platform
         id: build_image
         uses: ./buildah-build/
         with:
@@ -58,6 +73,17 @@ jobs:
           tags: ${{ env.IMAGE_TAG }}
           arch: ${{ matrix.arch }}
           build-args: ARCH=${{ matrix.arch }}
+          containerfiles: |
+            ./Containerfile
+
+      - name: Build Image (platform=linux/${{ matrix.arch }})
+        if: matrix.specify_platform
+        id: build_image
+        uses: ./buildah-build/
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAG }}
+          platform: linux/${{ matrix.arch }}
           containerfiles: |
             ./Containerfile
 
