@@ -67,6 +67,9 @@ export class BuildahCli implements Buildah {
         useOCI: boolean, arch: string, platform: string, layers: string, extraArgs: string[]
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
+        if (arch && platform) {
+            throw new Error("The --platform option may not be used in combination with the --arch option.");
+        }
         if (arch) {
             args.push("--arch");
             args.push(arch);
@@ -122,6 +125,9 @@ export class BuildahCli implements Buildah {
         core.debug("config");
         core.debug(container);
         const args: string[] = [ "config" ];
+        if (settings.arch && settings.platform) {
+            throw new Error("The --platform option may not be used in combination with the --arch option.");
+        }
         if (settings.entrypoint) {
             args.push("--entrypoint");
             args.push(BuildahCli.convertArrayToStringArg(settings.entrypoint));
@@ -185,10 +191,6 @@ export class BuildahCli implements Buildah {
         execOptions: exec.ExecOptions & { group?: boolean } = {},
     ): Promise<CommandResult> {
         // ghCore.info(`${EXECUTABLE} ${args.join(" ")}`)
-
-        if (args.arch && args.platform) {
-            throw new Error("The --platform option may not be used in combination with the --arch option.");
-        }
 
         let stdout = "";
         let stderr = "";
