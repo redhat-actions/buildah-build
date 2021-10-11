@@ -60,13 +60,26 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 ## Action Outputs
 
 `image`: The name of the built image.<br>
-For example, `spring-image`.
-
 `tags`: A list of the tags that were created, separated by spaces.<br>
-For example, `latest ${{ github.sha }}`.
-
 `image-with-tag`: The name of the image tagged with the first tag present.<br>
-For example, `spring-image:latest`
+
+For example:
+
+``` yml
+image: "spring-image"
+tags: "latest ${{ github.sha }}"
+image-with-tag: "spring-image:latest"
+```
+
+When input `tags` are provided in FQIN form, output `image` will be an empty, and output `tags` and `image-with-tag` will be both in FQIN form.
+
+For example:
+
+``` yml
+image: ""
+tags: "quay.io/podman/stable:latest quay.io/containers/podman:latest"
+image-with-tag: "quay.io/podman/stable:latest"
+```
 
 <a id="build-types"></a>
 
