@@ -40,7 +40,7 @@ jobs:
           sudo apt-get install -y qemu-user-static
 
       - name: Create Containerfile (arch=${{ matrix.arch }})
-        if: !matrix.specify_platform
+        if: ${{ !matrix.specify_platform }}
         run: |
           cat > Containerfile<<EOF
 
@@ -65,7 +65,7 @@ jobs:
           EOF
 
       - name: Build Image (arch=${{ matrix.arch }})
-        if: !matrix.specify_platform
+        if: ${{ matrix.specify_platform }}
         id: build_image
         uses: ./buildah-build/
         with:
