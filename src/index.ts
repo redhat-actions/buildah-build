@@ -10,6 +10,7 @@ import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
 import {
     getArch, getContainerfiles, getInputList, splitByNewline,
+    isFullImageName, getFullImageName,
 } from "./utils";
 
 export async function run(): Promise<void> {
@@ -30,16 +31,26 @@ export async function run(): Promise<void> {
     const DEFAULT_TAG = "latest";
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
     const containerFiles = getContainerfiles();
-    const image = core.getInput(Inputs.IMAGE, { required: true });
+    const image = core.getInput(Inputs.IMAGE);
     const tags = core.getInput(Inputs.TAGS);
-    const tagsList: string[] = tags.split(" ");
+    const tagsList: string[] = tags.trim().split(/\s+/);
 
     // info message if user doesn't provides any tag
     if (tagsList.length === 0) {
         core.info(`Input "${Inputs.TAGS}" is not provided, using default tag "${DEFAULT_TAG}"`);
         tagsList.push(DEFAULT_TAG);
     }
-    const newImage = `${image}:${tagsList[0]}`;
+
+    // check if all tags provided are in `image:tag` format
+    const isFullImageNameTag = isFullImageName(tagsList[0]);
+    if (tagsList.some((tag) => isFullImageName(tag) !== isFullImageNameTag)) {
+        throw new Error(`Input "${Inputs.TAGS}" cannot have a mix of full name and non full name tags`);
+    }
+    if (!isFullImageNameTag && !image) {
+        throw new Error(`Input "${Inputs.IMAGE}" must be provided when using non full name tags`);
+    }
+
+    const newImage = getFullImageName(image, tagsList[0]);
     const useOCI = core.getInput(Inputs.OCI) === "true";
 
     const arch = getArch();
@@ -56,7 +67,7 @@ export async function run(): Promise<void> {
     }
     core.setOutput(Outputs.IMAGE, image);
     core.setOutput(Outputs.TAGS, tags);
-    core.setOutput(Outputs.IMAGE_WITH_TAG, `${image}:${tagsList[0]}`);
+    core.setOutput(Outputs.IMAGE_WITH_TAG, newImage);
 }
 
 async function doBuildUsingContainerFiles(

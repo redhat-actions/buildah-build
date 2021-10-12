@@ -110,3 +110,14 @@ export function getInputList(name: string): string[] {
             [],
         );
 }
+
+export function isFullImageName(image: string): boolean {
+    return image.indexOf(":") > 0;
+}
+
+export function getFullImageName(image: string, tag: string): string {
+    if (isFullImageName(tag)) {
+        return tag;
+    }
+    return `${image}:${tag}`;
+}

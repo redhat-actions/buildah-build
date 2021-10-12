@@ -28,13 +28,13 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
-| containerfiles* | The list of Containerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Containerfiles. | **Must be provided**
+| containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Containerfiles. | **Must be provided**
 | extra-args | Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes. | None
-| image | Name to give to the output image. | **Must be provided**
+| image | Name to give to the output image. | **Must be provided unless tags are provided in `<repository>:<tag>` form**
 | layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
-| tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
-> *The `containerfiles` input was previously `dockerfiles`. Now `dockerfiles` is an alias for `containerfiles`. For details see [the issue](https://github.com/redhat-actions/buildah-build/issues/57).
+| tags | The tags of the image to build. For multiple tags, separate by whitespace. For example, `latest ${{ github.sha }}`. For multiple image names, specify tags in `<repository>:<tag>` form. For example, `quay.io/podman/stable:latest quay.io/containers/podman:latest` | `latest`
+> \*The `containerfiles` input was previously `dockerfiles`. Now `dockerfiles` is an alias for `containerfiles`. For details see [the issue](https://github.com/redhat-actions/buildah-build/issues/57).
 
 <a id="scratch-build-inputs"></a>
 
@@ -47,24 +47,39 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
 | envs | The environment variables to be set when running the container. This is a multiline input to add multiple environment variables. | None
-| image | Name to give to the output image. | **Must be provided**
+| image | Name to give to the output image. | **Must be provided unless tags are provided in `<repository>:<tag>` form**
 | oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
 | port | The port to expose when running the container. | None
-| tags | The tags of the image to build. For multiple tags, separate by a space. For example, `latest ${{ github.sha }}` | `latest`
+| tags | The tags of the image to build. For multiple tags, separate by whitespace. For example, `latest ${{ github.sha }}`. For multiple image names, specify tags in `<repository>:<tag>` form. For example, `quay.io/podman/stable:latest quay.io/containers/podman:latest` | `latest`
 | workdir | The working directory to use within the container. | None
+
+**NOTE**: Alternative to provide input `image` and `tags` separately, you can provide input `tags` as `<repository>:<tag>` with repository in fully qualified image name (FQIN) form (e.g. `quay.io/username/myimage:latest`). When FQIN tags are provided, input `image` will be ignored.
 
 <a id="outputs"></a>
 
 ## Action Outputs
 
 `image`: The name of the built image.<br>
-For example, `spring-image`.
-
 `tags`: A list of the tags that were created, separated by spaces.<br>
-For example, `latest ${{ github.sha }}`.
-
 `image-with-tag`: The name of the image tagged with the first tag present.<br>
-For example, `spring-image:latest`
+
+For example:
+
+``` yml
+image: "spring-image"
+tags: "latest ${{ github.sha }}"
+image-with-tag: "spring-image:latest"
+```
+
+When input `tags` are provided in FQIN form, output `image` will be an empty, and output `tags` and `image-with-tag` will be both in FQIN form.
+
+For example:
+
+``` yml
+image: ""
+tags: "quay.io/podman/stable:latest quay.io/containers/podman:latest"
+image-with-tag: "quay.io/podman/stable:latest"
+```
 
 <a id="build-types"></a>
 
@@ -175,6 +190,10 @@ Use the [buildah manifest](https://github.com/containers/buildah/blob/main/docs/
 There are examples and explanations of the `manifest` command [in this issue](https://github.com/containers/buildah/issues/1590).
 
 This action does not support the `manifest` command at this time, but there is [an issue open](https://github.com/redhat-actions/buildah-build/issues/61).
+
+## Build with docker/metadata-action
+
+Refer to the [docker/metadata-action example](./.github/workflows/docker_metadata_action.yml).
 
 ## Using private images
 
