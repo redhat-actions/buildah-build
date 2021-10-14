@@ -11,8 +11,8 @@ env:
   IMAGE_TAG: latest
 
 jobs:
-  build:
-    name: Build image using Buildah
+  build-multiarch:
+    name: Build multi-architecture image using Buildah
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -51,7 +51,7 @@ jobs:
           EOF
 
       - name: Build Image
-        id: build_image
+        id: build_image_multiarch
         uses: ./buildah-build/
         with:
           image: ${{ env.IMAGE_NAME }}
@@ -63,9 +63,9 @@ jobs:
 
       - name: Echo Outputs
         run: |
-          echo "Image: ${{ steps.build_image.outputs.image }}"
-          echo "Tags: ${{ steps.build_image.outputs.tags }}"
-          echo "Tagged Image: ${{ steps.build_image.outputs.image-with-tag }}"
+          echo "Image: ${{ steps.build_image_multiarch.outputs.image }}"
+          echo "Tags: ${{ steps.build_image_multiarch.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image_multiarch.outputs.image-with-tag }}"
 
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
@@ -73,9 +73,76 @@ jobs:
       - name: Check image metadata
         run: |
           set -x
-          buildah inspect ${{ steps.build_image.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".OCIv1.architecture"
-          buildah inspect ${{ steps.build_image.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".Docker.architecture"
+          buildah inspect ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".OCIv1.architecture"
+          buildah inspect ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".Docker.architecture"
 
       - name: Run image
         run: |
-          podman run --rm ${{ steps.build_image.outputs.image }}:${{ env.IMAGE_TAG }}
+          podman run --rm ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }}
+
+  build-multiplatform:
+    name: Build multi-platform image using Buildah
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ "linux/amd64", "linux/arm64/v8" ]
+        install_latest: [ true, false ]
+
+    steps:
+
+      # Checkout buildah action github repository
+      - name: Checkout Buildah action
+        uses: actions/checkout@v2
+        with:
+          path: "buildah-build"
+
+      - name: Install latest buildah
+        if: matrix.install_latest
+        run: |
+          bash buildah-build/.github/install_latest_buildah.sh
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      - name: Create Containerfile
+        run: |
+          cat > Containerfile<<EOF
+
+          FROM docker.io/alpine:3.14
+
+          RUN echo "hello world"
+
+          ENTRYPOINT [ "sh", "-c", "echo -n 'Machine: ' && uname -m && echo -n 'Bits: ' && getconf LONG_BIT && echo 'goodbye world'" ]
+          EOF
+
+      - name: Build Image
+        id: build_image_multiplatform
+        uses: ./buildah-build/
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAG }}
+          platform: ${{ matrix.platform }}
+          containerfiles: |
+            ./Containerfile
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image_multiplatform.outputs.image }}"
+          echo "Tags: ${{ steps.build_image_multiplatform.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image_multiplatform.outputs.image-with-tag }}"
+
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+      - name: Check image metadata
+        run: |
+          set -x
+          buildah inspect ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".OCIv1.architecture"
+          buildah inspect ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".Docker.architecture"
+
+      - name: Run image
+        run: |
+          podman run --rm ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }}
