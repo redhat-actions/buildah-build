@@ -86,6 +86,12 @@ export enum Inputs {
      */
     OCI = "oci",
     /**
+     * Label the image with this PLATFORM, instead of defaulting to the host platform.
+     * Required: false
+     * Default: None.
+     */
+    PLATFORM = "platform",
+    /**
      * The port to expose when running containers based on image
      * Required: false
      * Default: None.

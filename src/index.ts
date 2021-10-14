@@ -9,7 +9,7 @@ import * as path from "path";
 import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
 import {
-    getArch, getContainerfiles, getInputList, splitByNewline,
+    getArch, getPlatform, getContainerfiles, getInputList, splitByNewline,
     isFullImageName, getFullImageName,
 } from "./utils";
 
@@ -54,12 +54,17 @@ export async function run(): Promise<void> {
     const useOCI = core.getInput(Inputs.OCI) === "true";
 
     const arch = getArch();
+    const platform = getPlatform();
+
+    if (arch && platform) {
+        throw new Error("The --platform option may not be used in combination with the --arch option.");
+    }
 
     if (containerFiles.length !== 0) {
-        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI, arch);
+        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI, arch, platform);
     }
     else {
-        await doBuildFromScratch(cli, newImage, useOCI, arch);
+        await doBuildFromScratch(cli, newImage, useOCI, arch, platform);
     }
 
     if (tagsList.length > 1) {
@@ -71,7 +76,8 @@ export async function run(): Promise<void> {
 }
 
 async function doBuildUsingContainerFiles(
-    cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, arch: string
+    cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, arch: string,
+    platform: string
 ): Promise<void> {
     if (containerFiles.length === 1) {
         core.info(`Performing build from Containerfile`);
@@ -94,12 +100,12 @@ async function doBuildUsingContainerFiles(
         buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
     }
     await cli.buildUsingDocker(
-        newImage, context, containerFileAbsPaths, buildArgs, useOCI, arch, layers, buildahBudExtraArgs
+        newImage, context, containerFileAbsPaths, buildArgs, useOCI, arch, platform, layers, buildahBudExtraArgs
     );
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string
+    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string, platform: string
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
@@ -119,6 +125,7 @@ async function doBuildFromScratch(
         workingdir: workingDir,
         envs,
         arch,
+        platform,
     };
     await cli.config(containerId, newImageConfig);
     await cli.copy(containerId, content);

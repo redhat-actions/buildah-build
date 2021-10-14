@@ -56,6 +56,9 @@ inputs:
   archs:
     description: 'Alias for "arch". "arch" takes precedence if both are set.'
     required: false
+  platform:
+    description: 'Label the image with this PLATFORM, instead of defaulting to the host platform.'
+    required: false
   extra-args:
     description: |
       Extra args to be passed to buildah bud.
