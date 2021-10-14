@@ -1,6 +1,11 @@
 # buildah-build Changelog
+
+## v2.8
+- Allow fully qualified image names in `tags` input, for compatibility with [docker/metadata-action`](https://github.com/docker/metadata-action). [#74](https://github.com/redhat-actions/buildah-build/issues/74)
+- Support for `--platform` argument [#65](https://github.com/redhat-actions/buildah-build/issues/65)
+
 ## v2.7
-- Add output `image-with-tag` which provides image name and it's corresponding first tag present.
+- Add output `image-with-tag` which provides image name and its corresponding first tag present.
 - Replace input `dockerfiles` with `containerfiles`. Input `dockerfiles` will be present as alias of `containerfiles`.
 - Add matrix to install latest buildah. (Internal)
 

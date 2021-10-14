@@ -29,13 +29,14 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | platform | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host platform)
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
-| containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. This is a multiline input to allow multiple Containerfiles. | **Must be provided**
+| containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. Separate filenames by newline. | **Required**
 | extra-args | Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes. | None
-| image | Name to give to the output image. | **Must be provided unless tags are provided in `<repository>:<tag>` form**
+| image | Name to give to the output image. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | **Required** - unless all `tags` include image name
 | layers | Set to true to cache intermediate layers during the build process. | None
-| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
-| tags | The tags of the image to build. For multiple tags, separate by whitespace. For example, `latest ${{ github.sha }}`. For multiple image names, specify tags in `<repository>:<tag>` form. For example, `quay.io/podman/stable:latest quay.io/containers/podman:latest` | `latest`
-> \*The `containerfiles` input was previously `dockerfiles`. Now `dockerfiles` is an alias for `containerfiles`. For details see [the issue](https://github.com/redhat-actions/buildah-build/issues/57).
+| oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
+| tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
+
+> \* The `containerfiles` input was previously `dockerfiles`. Refer to [this issue](https://github.com/redhat-actions/buildah-build/issues/57).
 
 <a id="scratch-build-inputs"></a>
 
@@ -45,25 +46,49 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | ---------- | ----------- | ------- |
 | arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
 | platform | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host platform)
-| base-image | The base image to use for the container. | **Must be provided**
+| base-image | The base image to use for the container. | **Required**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
-| entrypoint | The entry point to set for the container. This is a multiline input; split arguments across lines. | None
-| envs | The environment variables to be set when running the container. This is a multiline input to add multiple environment variables. | None
-| image | Name to give to the output image. | **Must be provided unless tags are provided in `<repository>:<tag>` form**
-| oci | Build the image using the OCI format, instead of the Docker format. By default, this is `false`, because images built using the OCI format have issues when published to Dockerhub. | `false`
+| entrypoint | The entry point to set for the container. Separate arguments by newline. | None
+| envs | The environment variables to be set when running the container. Separate key=value pairs by newline. | None
+| image | Name to give to the output image. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | **Required** - unless all tags include image name
+| oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
 | port | The port to expose when running the container. | None
-| tags | The tags of the image to build. For multiple tags, separate by whitespace. For example, `latest ${{ github.sha }}`. For multiple image names, specify tags in `<repository>:<tag>` form. For example, `quay.io/podman/stable:latest quay.io/containers/podman:latest` | `latest`
+| tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
 | workdir | The working directory to use within the container. | None
 
-**NOTE**: Alternative to provide input `image` and `tags` separately, you can provide input `tags` as `<repository>:<tag>` with repository in fully qualified image name (FQIN) form (e.g. `quay.io/username/myimage:latest`). When FQIN tags are provided, input `image` will be ignored.
+<a id="image-tag-inputs"></a>
+### Image and Tags Inputs
+The `image` and `tags` inputs can be provided in one of two forms.
+
+At least one tag must always be provided in `tags`. Multiple tags are separated by whitespace.
+
+**Option 1**: Provide both `image` and `tags` inputs. The image will be built, and then tagged in the form `${image}:${tag}` for each tag.
+
+For example:
+```yaml
+image: quay.io/my-image
+tags: v1 v1.0.0
+```
+will create the image and apply two tags: `quay.io/my-image:v1` and `quay.io/my-image:v1.0.0`.
+
+**Option 2**: Provide only the `tags` input, including the image name in each tag. The image will be built, and then tagged with each `tag`. In this case, the `image` input is ignored.
+
+For example:
+```yaml
+# 'image' input is not set
+tags: quay.io/my-image:v1 quay.io/my-image:v1.0.0
+```
+will also apply two tags: `quay.io/my-image:v1` and `quay.io/my-image:v1.0.0`.
+
+If the `tags` input does not have image names in the `${name}:${tag}` form, then the `image` input must be set.
 
 <a id="outputs"></a>
 
 ## Action Outputs
 
-`image`: The name of the built image.<br>
-`tags`: A list of the tags that were created, separated by spaces.<br>
-`image-with-tag`: The name of the image tagged with the first tag present.<br>
+`image`: The name of the image as it was input.<br>
+`tags`: A space-separated list of the tags that were applied to the new image.<br>
+`image-with-tag`: The name of the image, tagged with the first tag.<br>
 
 For example:
 
@@ -71,16 +96,6 @@ For example:
 image: "spring-image"
 tags: "latest ${{ github.sha }}"
 image-with-tag: "spring-image:latest"
-```
-
-When input `tags` are provided in FQIN form, output `image` will be an empty, and output `tags` and `image-with-tag` will be both in FQIN form.
-
-For example:
-
-``` yml
-image: ""
-tags: "quay.io/podman/stable:latest quay.io/containers/podman:latest"
-image-with-tag: "quay.io/podman/stable:latest"
 ```
 
 <a id="build-types"></a>

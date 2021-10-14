@@ -44,10 +44,10 @@ export async function run(): Promise<void> {
     // check if all tags provided are in `image:tag` format
     const isFullImageNameTag = isFullImageName(tagsList[0]);
     if (tagsList.some((tag) => isFullImageName(tag) !== isFullImageNameTag)) {
-        throw new Error(`Input "${Inputs.TAGS}" cannot have a mix of full name and non full name tags`);
+        throw new Error(`Input "${Inputs.TAGS}" cannot have a mix of full name and non full name tags. Refer to https://github.com/redhat-actions/buildah-build#image-tag-inputs`);
     }
     if (!isFullImageNameTag && !image) {
-        throw new Error(`Input "${Inputs.IMAGE}" must be provided when using non full name tags`);
+        throw new Error(`Input "${Inputs.IMAGE}" must be provided when not using full image name tags. Refer to https://github.com/redhat-actions/buildah-build#image-tag-inputs`);
     }
 
     const newImage = getFullImageName(image, tagsList[0]);
