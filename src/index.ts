@@ -34,6 +34,8 @@ export async function run(): Promise<void> {
     const image = core.getInput(Inputs.IMAGE);
     const tags = core.getInput(Inputs.TAGS);
     const tagsList: string[] = tags.trim().split(/\s+/);
+    const labels = core.getInput(Inputs.LABELS);
+    const labelsList: string[] = labels ? splitByNewline(labels) : [];
 
     // info message if user doesn't provides any tag
     if (tagsList.length === 0) {
@@ -61,13 +63,13 @@ export async function run(): Promise<void> {
     }
 
     if (containerFiles.length !== 0) {
-        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI, arch, platform);
+        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI, arch, platform, labelsList);
     }
     else {
         if (platform) {
             throw new Error("The --platform option is not supported for builds without containerfiles.");
         }
-        await doBuildFromScratch(cli, newImage, useOCI, arch);
+        await doBuildFromScratch(cli, newImage, useOCI, arch, labelsList);
     }
 
     if (tagsList.length > 1) {
@@ -80,7 +82,7 @@ export async function run(): Promise<void> {
 
 async function doBuildUsingContainerFiles(
     cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, arch: string,
-    platform: string
+    platform: string, labels: string[],
 ): Promise<void> {
     if (containerFiles.length === 1) {
         core.info(`Performing build from Containerfile`);
@@ -103,12 +105,12 @@ async function doBuildUsingContainerFiles(
         buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
     }
     await cli.buildUsingDocker(
-        newImage, context, containerFileAbsPaths, buildArgs, useOCI, arch, platform, layers, buildahBudExtraArgs
+        newImage, context, containerFileAbsPaths, buildArgs, useOCI, arch, platform, labels, layers, buildahBudExtraArgs
     );
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string
+    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string, labels: string[],
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
@@ -128,6 +130,7 @@ async function doBuildFromScratch(
         workingdir: workingDir,
         envs,
         arch,
+        labels,
     };
     await cli.config(containerId, newImageConfig);
     await cli.copy(containerId, content);

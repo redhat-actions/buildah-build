@@ -12,6 +12,9 @@ inputs:
     description: 'The tags of the image to build. For multiple tags, seperate by whitespace. For example, "latest v1".'
     required: false
     default: latest
+  labels:
+    description: 'The labels of the image to build. Seperate by newline. For example, "io.containers.capabilities=sys_admin,mknod".'
+    required: false
   base-image:
     description: 'The base image to use to create a new container image'
     required: false

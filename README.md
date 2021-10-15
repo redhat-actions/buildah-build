@@ -35,6 +35,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
 | tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
+| labels | One or more labels to give the new image. Separate by newline. | None
 
 > \* The `containerfiles` input was previously `dockerfiles`. Refer to [this issue](https://github.com/redhat-actions/buildah-build/issues/57).
 
@@ -53,6 +54,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
 | port | The port to expose when running the container. | None
 | tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
+| labels | One or more labels to give the new image. Separate by newline. | None
 | workdir | The working directory to use within the container. | None
 
 <a id="image-tag-inputs"></a>
