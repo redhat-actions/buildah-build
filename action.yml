@@ -57,7 +57,9 @@ inputs:
     description: 'Alias for "arch". "arch" takes precedence if both are set.'
     required: false
   platform:
-    description: 'Label the image with this PLATFORM, instead of defaulting to the host platform.'
+    description: |
+      Label the image with this PLATFORM, instead of defaulting to the host platform.
+      Only supported for containerfile builds.
     required: false
   extra-args:
     description: |

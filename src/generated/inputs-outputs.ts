@@ -87,6 +87,7 @@ export enum Inputs {
     OCI = "oci",
     /**
      * Label the image with this PLATFORM, instead of defaulting to the host platform.
+     * Only supported for containerfile builds.
      * Required: false
      * Default: None.
      */
