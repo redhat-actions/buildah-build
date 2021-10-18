@@ -45,7 +45,6 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
 | arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
-| platform | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host platform)
 | base-image | The base image to use for the container. | **Required**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | entrypoint | The entry point to set for the container. Separate arguments by newline. | None

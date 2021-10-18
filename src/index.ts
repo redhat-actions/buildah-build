@@ -64,7 +64,10 @@ export async function run(): Promise<void> {
         await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI, arch, platform);
     }
     else {
-        await doBuildFromScratch(cli, newImage, useOCI, arch, platform);
+        if (platform) {
+            throw new Error("The --platform option is not supported for builds without containerfiles.");
+        }
+        await doBuildFromScratch(cli, newImage, useOCI, arch);
     }
 
     if (tagsList.length > 1) {
@@ -105,7 +108,7 @@ async function doBuildUsingContainerFiles(
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string, platform: string
+    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
@@ -125,7 +128,6 @@ async function doBuildFromScratch(
         workingdir: workingDir,
         envs,
         arch,
-        platform,
     };
     await cli.config(containerId, newImageConfig);
     await cli.copy(containerId, content);

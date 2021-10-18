@@ -15,7 +15,6 @@ export interface BuildahConfigSettings {
     port?: string;
     workingdir?: string;
     arch?: string;
-    platform?: string;
 }
 
 interface Buildah {
@@ -139,10 +138,6 @@ export class BuildahCli implements Buildah {
         if (settings.arch) {
             args.push("--arch");
             args.push(settings.arch);
-        }
-        if (settings.platform) {
-            args.push("--platform");
-            args.push(settings.platform);
         }
         if (settings.workingdir) {
             args.push("--workingdir");
