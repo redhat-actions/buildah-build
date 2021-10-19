@@ -77,3 +77,11 @@ jobs:
       # Check if image is build
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+      - name: Check image metadata
+        run: |
+          set -x
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.description"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.description"'
