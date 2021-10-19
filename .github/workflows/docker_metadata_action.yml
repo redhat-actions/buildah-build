@@ -9,17 +9,17 @@ on:
   schedule:
     - cron: '0 0 * * *'  # every day at midnight
 
-env:
-  IMAGE_NAME: "hello-world"
-
 jobs:
-  build:
-    name: Build image using Buildah
+  build-containerfile:
+    name: Build image with Containerfile
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         install_latest: [ true, false ]
+
+    env:
+      IMAGE_NAME: "hello-world"
 
     steps:
 
@@ -62,6 +62,7 @@ jobs:
         with:
           layers: false
           tags: ${{ steps.docker-metadata.outputs.tags }}
+          labels: ${{ steps.docker-metadata.outputs.labels }}
           containerfiles: |
             ./Containerfile
           extra-args: |
@@ -76,3 +77,130 @@ jobs:
       # Check if image is build
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+      - name: Check image metadata
+        run: |
+          set -x
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.description"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.description"'
+
+  build-scratch:
+    name: Build image without Containerfile
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        install_latest: [ true, false ]
+
+    env:
+      PROJECT_DIR: spring-petclinic
+      IMAGE_NAME: spring-petclinic
+      MVN_REPO_DIR: ~/.m2/repository
+
+    steps:
+
+      # Checkout buildah action github repository
+      - name: Checkout Buildah action
+        uses: actions/checkout@v2
+
+      - name: Docker Metadata
+        id: docker-metadata
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            ${{ env.IMAGE_NAME }}
+          tags: |
+            type=edge
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+            type=schedule
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+
+      - name: Install latest buildah
+        if: matrix.install_latest
+        run: |
+          bash .github/install_latest_buildah.sh
+
+      # Checkout spring-petclinic github repository
+      - name: Checkout spring-petclinic project
+        uses: actions/checkout@v2
+        with:
+          repository: "spring-projects/spring-petclinic"
+          path: ${{ env.PROJECT_DIR }}
+
+      # If none of these files has changed, we assume that the contents of
+      # .m2/repository can be fetched from the cache.
+      - name: Hash Maven files
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          echo "MVN_HASH=${{ hashFiles('**/pom.xml', '.mvn/**/*', 'mvnw*') }}" >> $GITHUB_ENV
+
+      # Download the m2 repository from the cache to speed up the build.
+      - name: Check for Maven cache
+        id: check-mvn-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.MVN_REPO_DIR }}
+          key: ${{ env.MVN_HASH }}
+
+      # Setup java.
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      # Run maven to build the project
+      - name: Maven
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          mvn package -ntp -B
+
+       # If there was no cache hit above, store the output into the cache now.
+      - name: Save Maven repo into cache
+        if: ${{ steps.check-mvn-cache.outputs.cache-hit }} != 'true'
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.MVN_REPO_DIR }}
+          key: ${{ env.MVN_HASH }}
+
+      # Build image using Buildah action
+      - name: Build Image
+        id: build_image
+        uses: ./
+        with:
+          tags: ${{ steps.docker-metadata.outputs.tags }}
+          labels: ${{ steps.docker-metadata.outputs.labels }}
+          base-image: 'registry.access.redhat.com/openjdk/openjdk-11-rhel7'
+          # To avoid hardcoding a particular version of the binary.
+          content: |
+            ./spring-petclinic/target/spring-petclinic-*.jar
+          entrypoint: |
+            java
+            -jar
+            spring-petclinic-*.jar
+          port: 8080
+          arch: amd64
+          workdir: "."
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image.outputs.image }}"
+          echo "Tags: ${{ steps.build_image.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image.outputs.image-with-tag }}"
+
+      # Check if image is build
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+      - name: Check image metadata
+        run: |
+          set -x
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.description"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.description"'

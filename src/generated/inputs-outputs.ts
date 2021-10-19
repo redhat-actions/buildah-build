@@ -74,6 +74,12 @@ export enum Inputs {
      */
     IMAGE = "image",
     /**
+     * The labels of the image to build. Seperate by newline. For example, "io.containers.capabilities=sys_admin,mknod".
+     * Required: false
+     * Default: None.
+     */
+    LABELS = "labels",
+    /**
      * Set to true to cache intermediate layers during build process
      * Required: false
      * Default: None.
