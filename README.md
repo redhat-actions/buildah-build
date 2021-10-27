@@ -67,19 +67,19 @@ At least one tag must always be provided in `tags`. Multiple tags are separated 
 
 For example:
 ```yaml
-image: quay.io/my-image
+image: quay.io/my-namespace/my-image
 tags: v1 v1.0.0
 ```
-will create the image and apply two tags: `quay.io/my-image:v1` and `quay.io/my-image:v1.0.0`.
+will create the image and apply two tags: `quay.io/my-namespace/my-image:v1` and `quay.io/my-namespace/my-image:v1.0.0`.
 
 **Option 2**: Provide only the `tags` input, including the image name in each tag. The image will be built, and then tagged with each `tag`. In this case, the `image` input is ignored.
 
 For example:
 ```yaml
 # 'image' input is not set
-tags: quay.io/my-image:v1 quay.io/my-image:v1.0.0
+tags: quay.io/my-namespace/my-image:v1 quay.io/my-namespace/my-image:v1.0.0
 ```
-will also apply two tags: `quay.io/my-image:v1` and `quay.io/my-image:v1.0.0`.
+will also apply two tags: `quay.io/my-namespace/my-image:v1` and `quay.io/my-namespace/my-image:v1.0.0`.
 
 If the `tags` input does not have image names in the `${name}:${tag}` form, then the `image` input must be set.
 
