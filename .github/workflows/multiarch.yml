@@ -20,7 +20,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [ amd64, i386, arm64v8 ]
         install_latest: [ true, false ]
 
     steps:
@@ -45,8 +44,7 @@ jobs:
         run: |
           cat > Containerfile<<EOF
 
-          ARG ARCH
-          FROM docker.io/\${ARCH}/alpine:3.14
+          FROM docker.io/alpine:3.14
 
           RUN echo "hello world"
 
@@ -59,8 +57,7 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.IMAGE_TAG }}
-          arch: ${{ matrix.arch }}
-          build-args: ARCH=${{ matrix.arch }}
+          archs: amd64, ppc64le, arm64
           containerfiles: |
             ./Containerfile
 
@@ -83,6 +80,10 @@ jobs:
         run: |
           podman run --rm ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }}
 
+      - name: Check manifest
+        run: |
+          buildah manifest inspect ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }}
+
   build-multiplatform-containerfile:
     name: Build multi-platform image using Containerfile
     env:
@@ -91,7 +92,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ "linux/amd64", "linux/arm64/v8" ]
         install_latest: [ true, false ]
 
     steps:
@@ -129,7 +129,7 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.IMAGE_TAG }}
-          platform: ${{ matrix.platform }}
+          platforms: linux/amd64, linux/ppc64le
           containerfiles: |
             ./Containerfile
 
@@ -142,11 +142,10 @@ jobs:
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
 
-      - name: Check image metadata
+      - name: Check manifest
         run: |
           set -x
-          buildah inspect ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".OCIv1.architecture"
-          buildah inspect ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".Docker.architecture"
+          buildah manifest inspect ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }}
 
       - name: Run image
         run: |
@@ -160,7 +159,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [ amd64, i386, arm64v8 ]
         install_latest: [ true, false ]
 
     steps:
@@ -230,8 +228,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.IMAGE_TAG }}
           base-image: 'registry.access.redhat.com/openjdk/openjdk-11-rhel7'
-          arch: ${{ matrix.arch }}
-          build-args: ARCH=${{ matrix.arch }}
+          archs: amd64, i386, ppc64le
           # To avoid hardcoding a particular version of the binary.
           content: |
             ./spring-petclinic/target/spring-petclinic-*.jar
@@ -251,8 +248,7 @@ jobs:
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
 
-      - name: Check image metadata
+      - name: Check manifest
         run: |
           set -x
-          buildah inspect ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".OCIv1.architecture"
-          buildah inspect ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }} | jq ".Docker.architecture"
+          buildah manifest inspect ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }}

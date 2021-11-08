@@ -21,12 +21,15 @@ export interface BuildahConfigSettings {
 interface Buildah {
     buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
-        useOCI: boolean, arch: string, platform: string, labels: string[], layers: string, extraArgs: string[]
+        useOCI: boolean, labels: string[], layers: string,
+        extraArgs: string[], arch?: string, platform?: string,
     ): Promise<CommandResult>;
     from(baseImage: string): Promise<CommandResult>;
     config(container: string, setting: BuildahConfigSettings): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[]): Promise<CommandResult | undefined>;
     commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult>;
+    manifestCreate(manifest: string): Promise<void>;
+    manifestAdd(manifest: string, imageName: string, tags: string[]): Promise<void>;
 }
 
 export class BuildahCli implements Buildah {
@@ -64,7 +67,8 @@ export class BuildahCli implements Buildah {
 
     async buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
-        useOCI: boolean, arch: string, platform: string, labels: string[], layers: string, extraArgs: string[]
+        useOCI: boolean, labels: string[], layers: string,
+        extraArgs: string[], arch?: string, platform?: string
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
         if (arch) {
@@ -176,6 +180,21 @@ export class BuildahCli implements Buildah {
         }
         core.info(`Tagging the built image with tags ${tags.toString()}`);
         return this.execute(args);
+    }
+
+    async manifestCreate(manifest: string): Promise<void> {
+        const args: string[] = [ "manifest", "create" ];
+        args.push(manifest);
+        core.info(`Creating manifest ${manifest}`);
+        await this.execute(args);
+    }
+
+    async manifestAdd(manifest: string, image: string): Promise<void> {
+        const args: string[] = [ "manifest", "add" ];
+        args.push(manifest);
+        args.push(image);
+        core.info(`Adding image "${image}" to the manifest.`);
+        await this.execute(args);
     }
 
     private static convertArrayToStringArg(args: string[]): string {

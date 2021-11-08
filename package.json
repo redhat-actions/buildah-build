@@ -14,7 +14,8 @@
     "compile": "tsc -p .",
     "bundle": "ncc build src/index.ts --source-map --minify",
     "clean": "rm -rf out/ dist/",
-    "lint": "eslint . --max-warnings=0"
+    "lint": "eslint . --max-warnings=0",
+    "generate-ios": "npx action-io-generator -w -o ./src/generated/inputs-outputs.ts"
   },
   "keywords": [],
   "author": "Red Hat",
