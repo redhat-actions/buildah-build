@@ -10,7 +10,7 @@ import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
 import {
     getArch, getPlatform, getContainerfiles, getInputList, splitByNewline,
-    isFullImageName, getFullImageName, getTagSuffix,
+    isFullImageName, getFullImageName, removeIllegalCharacters,
 } from "./utils";
 
 export async function run(): Promise<void> {
@@ -78,23 +78,34 @@ export async function run(): Promise<void> {
 
     if ((archs.length > 0) || (platforms.length > 0)) {
         core.info(`Creating manifest with tag${tagsList.length !== 1 ? "s" : ""} "${tagsList.join(", ")}"`);
+        const builtImage = [];
+        const builtManifest = [];
         for (const tag of tagsList) {
             const manifestName = getFullImageName(image, tag);
             await cli.manifestCreate(manifestName);
+            builtManifest.push(manifestName);
 
             for (const arch of archs) {
-                const tagSuffix = getTagSuffix(arch);
+                const tagSuffix = removeIllegalCharacters(arch);
+                builtImage.push(`${newImage}-${tagSuffix}`);
                 await cli.manifestAdd(manifestName, `${newImage}-${tagSuffix}`);
             }
 
             for (const platform of platforms) {
-                const tagSuffix = getTagSuffix(platform);
+                const tagSuffix = removeIllegalCharacters(platform);
+                builtImage.push(`${newImage}-${tagSuffix}`);
                 await cli.manifestAdd(manifestName, `${newImage}-${tagSuffix}`);
             }
         }
+
+        core.info(`✅ Successfully built image${builtImage.length !== 1 ? "s" : ""} "${builtImage.join(", ")}" `
+            + `and manifest${builtManifest.length !== 1 ? "s" : ""} "${builtManifest.join(", ")}"`);
     }
     else if (tagsList.length > 1) {
         await cli.tag(image, tagsList);
+    }
+    else if (tagsList.length === 1) {
+        core.info(`✅ Successfully built image "${getFullImageName(image, tagsList[0])}"`);
     }
 
     core.setOutput(Outputs.IMAGE, image);
@@ -131,7 +142,7 @@ async function doBuildUsingContainerFiles(
     // therefore, appending arch/platform in the tag
     if (archs.length > 0 || platforms.length > 0) {
         for (const arch of archs) {
-            const tagSuffix = getTagSuffix(arch);
+            const tagSuffix = removeIllegalCharacters(arch);
             await cli.buildUsingDocker(
                 `${newImage}-${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
                 useOCI, labels, layers, buildahBudExtraArgs, arch, undefined
@@ -139,7 +150,7 @@ async function doBuildUsingContainerFiles(
         }
 
         for (const platform of platforms) {
-            const tagSuffix = getTagSuffix(platform);
+            const tagSuffix = removeIllegalCharacters(platform);
             await cli.buildUsingDocker(
                 `${newImage}-${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
                 useOCI, labels, layers, buildahBudExtraArgs, undefined, platform
@@ -171,7 +182,7 @@ async function doBuildFromScratch(
 
     if (archs.length > 0) {
         for (const arch of archs) {
-            const tagSuffix = getTagSuffix(arch);
+            const tagSuffix = removeIllegalCharacters(arch);
             const newImageConfig: BuildahConfigSettings = {
                 entrypoint,
                 port,

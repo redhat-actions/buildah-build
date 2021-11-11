@@ -173,13 +173,16 @@ export class BuildahCli implements Buildah {
         return this.execute(args);
     }
 
-    async tag(imageName: string, tags: string[]): Promise<CommandResult> {
+    async tag(imageName: string, tags: string[]): Promise<void> {
         const args: string[] = [ "tag" ];
+        const builtImage = [];
         for (const tag of tags) {
             args.push(getFullImageName(imageName, tag));
+            builtImage.push(getFullImageName(imageName, tag));
         }
         core.info(`Tagging the built image with tags ${tags.toString()}`);
-        return this.execute(args);
+        await this.execute(args);
+        core.info(`✅ Successfully built image${builtImage.length !== 1 ? "s" : ""} "${builtImage.join(", ")}"`);
     }
 
     async manifestCreate(manifest: string): Promise<void> {

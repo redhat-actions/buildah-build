@@ -166,6 +166,6 @@ export function getFullImageName(image: string, tag: string): string {
     return `${image}:${tag}`;
 }
 
-export function getTagSuffix(item: string): string {
+export function removeIllegalCharacters(item: string): string {
     return item.replace(/[^a-zA-Z0-9 ]/g, "");
 }
