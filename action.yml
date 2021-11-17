@@ -54,15 +54,23 @@ inputs:
     default: 'false'
     required: false
   arch:
-    description: 'Label the image with this ARCH, instead of defaulting to the host architecture.'
+    description:
+      'Label the image with this ARCH, instead of defaulting to the host architecture'
     required: false
   archs:
-    description: 'Alias for "arch". "arch" takes precedence if both are set.'
+    description: |
+      'Same as input 'arch', use this for multiple architectures.
+      Seperate them by a comma'
     required: false
   platform:
     description: |
       Label the image with this PLATFORM, instead of defaulting to the host platform.
       Only supported for containerfile builds.
+    required: false
+  platforms:
+    description: |
+      'Same as input 'platform', use this for multiple platforms.
+      Seperate them by a comma'
     required: false
   extra-args:
     description: |

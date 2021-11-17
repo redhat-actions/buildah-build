@@ -25,8 +25,8 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
-| platform | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host platform)
+| archs | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple architectures, seperate them by a comma | None (host architecture)
+| platforms | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple platforms, seperate them by a comma | None (host platform)
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. Separate filenames by newline. | **Required**
@@ -45,7 +45,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| arch | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. | None (host architecture)
+| archs | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple architectures, seperate them by a comma | None (host architecture)
 | base-image | The base image to use for the container. | **Required**
 | content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
 | entrypoint | The entry point to set for the container. Separate arguments by newline. | None
@@ -197,17 +197,22 @@ sudo podman run --rm --privileged docker.io/tonistiigi/binfmt --install all
 ```
 This registration remains active until the host reboots.
 
-### The `arch` and `platform` inputs
-The `arch` and `platform` arguments override the Architecture and Platform labels in the output image, respectively. They do not actually affect the architectures and platforms the output image will run on. The image must still be built for the required architecture or platform.
+### The `archs` and `platforms` inputs
+
+The `archs` and `platforms` arguments override the Architecture and Platform labels in the output image, respectively. They do not actually affect the architectures and platforms the output image will run on. The image must still be built for the required architecture or platform.
 
 There is a simple example [in this issue](https://github.com/redhat-actions/buildah-build/issues/60#issuecomment-876552452).
 
 ### Creating a Multi-Arch Image List
-Use the [buildah manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) command to bundle images into an image list, so multiple image can be referenced by the same repository tag.
 
-There are examples and explanations of the `manifest` command [in this issue](https://github.com/containers/buildah/issues/1590).
+Input `archs` and `platforms` is provided to build the multi architecture images. If one of these input is provided then a [manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) is built with the multiple architecture images. Name of the manifest is taken from the inputs `image` and `tags`.
+Incase multiple tags are provided then multiple manifest is created based on the provided tags.
 
-This action does not support the `manifest` command at this time, but there is [an issue open](https://github.com/redhat-actions/buildah-build/issues/61).
+Use the `archs` and `platforms` inputs to build multi-architecture images. The name of the manifest is determined by the image and tags inputs.
+
+If multiple tags are provided, multiple equivalent manifests will be created with the given tags.
+
+[`push-to-registry`](https://github.com/redhat-actions/push-to-registry) action can be used to push the generated image manifest.
 
 ## Build with docker/metadata-action
 

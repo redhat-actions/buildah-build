@@ -10,7 +10,7 @@ import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
 import {
     getArch, getPlatform, getContainerfiles, getInputList, splitByNewline,
-    isFullImageName, getFullImageName,
+    isFullImageName, getFullImageName, removeIllegalCharacters,
 } from "./utils";
 
 export async function run(): Promise<void> {
@@ -55,34 +55,67 @@ export async function run(): Promise<void> {
     const newImage = getFullImageName(image, tagsList[0]);
     const useOCI = core.getInput(Inputs.OCI) === "true";
 
-    const arch = getArch();
-    const platform = getPlatform();
+    const archs = getArch();
+    const platforms = getPlatform();
 
-    if (arch && platform) {
+    // core.debug(`Archs ---> ${archs.toString()}`);
+    // core.debug(`Platforms ---> ${platforms.toString()}`);
+
+    if ((archs.length > 0) && (platforms.length > 0)) {
         throw new Error("The --platform option may not be used in combination with the --arch option.");
     }
 
     if (containerFiles.length !== 0) {
-        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI, arch, platform, labelsList);
+        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI,
+            archs, platforms, labelsList);
     }
     else {
-        if (platform) {
+        if (platforms.length > 0) {
             throw new Error("The --platform option is not supported for builds without containerfiles.");
         }
-        await doBuildFromScratch(cli, newImage, useOCI, arch, labelsList);
+        await doBuildFromScratch(cli, newImage, useOCI, archs, labelsList);
     }
 
-    if (tagsList.length > 1) {
+    if ((archs.length > 0) || (platforms.length > 0)) {
+        core.info(`Creating manifest with tag${tagsList.length !== 1 ? "s" : ""} "${tagsList.join(", ")}"`);
+        const builtImage = [];
+        const builtManifest = [];
+        for (const tag of tagsList) {
+            const manifestName = getFullImageName(image, tag);
+            await cli.manifestCreate(manifestName);
+            builtManifest.push(manifestName);
+
+            for (const arch of archs) {
+                const tagSuffix = removeIllegalCharacters(arch);
+                builtImage.push(`${newImage}-${tagSuffix}`);
+                await cli.manifestAdd(manifestName, `${newImage}-${tagSuffix}`);
+            }
+
+            for (const platform of platforms) {
+                const tagSuffix = removeIllegalCharacters(platform);
+                builtImage.push(`${newImage}-${tagSuffix}`);
+                await cli.manifestAdd(manifestName, `${newImage}-${tagSuffix}`);
+            }
+        }
+
+        core.info(`✅ Successfully built image${builtImage.length !== 1 ? "s" : ""} "${builtImage.join(", ")}" `
+            + `and manifest${builtManifest.length !== 1 ? "s" : ""} "${builtManifest.join(", ")}"`);
+    }
+    else if (tagsList.length > 1) {
         await cli.tag(image, tagsList);
     }
+    else if (tagsList.length === 1) {
+        core.info(`✅ Successfully built image "${getFullImageName(image, tagsList[0])}"`);
+    }
+
     core.setOutput(Outputs.IMAGE, image);
     core.setOutput(Outputs.TAGS, tags);
     core.setOutput(Outputs.IMAGE_WITH_TAG, newImage);
 }
 
 async function doBuildUsingContainerFiles(
-    cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, arch: string,
-    platform: string, labels: string[],
+    cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, archs: string[],
+    platforms: string[], labels: string[],
 ): Promise<void> {
     if (containerFiles.length === 1) {
         core.info(`Performing build from Containerfile`);
@@ -104,13 +137,36 @@ async function doBuildUsingContainerFiles(
         const lines = splitByNewline(inputExtraArgsStr);
         buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
     }
-    await cli.buildUsingDocker(
-        newImage, context, containerFileAbsPaths, buildArgs, useOCI, arch, platform, labels, layers, buildahBudExtraArgs
-    );
+
+    // since multi arch image can not have same tag
+    // therefore, appending arch/platform in the tag
+    if (archs.length > 0 || platforms.length > 0) {
+        for (const arch of archs) {
+            const tagSuffix = removeIllegalCharacters(arch);
+            await cli.buildUsingDocker(
+                `${newImage}-${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
+                useOCI, labels, layers, buildahBudExtraArgs, arch, undefined
+            );
+        }
+
+        for (const platform of platforms) {
+            const tagSuffix = removeIllegalCharacters(platform);
+            await cli.buildUsingDocker(
+                `${newImage}-${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
+                useOCI, labels, layers, buildahBudExtraArgs, undefined, platform
+            );
+        }
+    }
+    else {
+        await cli.buildUsingDocker(
+            newImage, context, containerFileAbsPaths, buildArgs,
+            useOCI, labels, layers, buildahBudExtraArgs
+        );
+    }
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, useOCI: boolean, arch: string, labels: string[],
+    cli: BuildahCli, newImage: string, useOCI: boolean, archs: string[], labels: string[],
 ): Promise<void> {
     core.info(`Performing build from scratch`);
 
@@ -124,17 +180,35 @@ async function doBuildFromScratch(
     const container = await cli.from(baseImage);
     const containerId = container.output.replace("\n", "");
 
-    const newImageConfig: BuildahConfigSettings = {
-        entrypoint,
-        port,
-        workingdir: workingDir,
-        envs,
-        arch,
-        labels,
-    };
-    await cli.config(containerId, newImageConfig);
-    await cli.copy(containerId, content);
-    await cli.commit(containerId, newImage, useOCI);
+    if (archs.length > 0) {
+        for (const arch of archs) {
+            const tagSuffix = removeIllegalCharacters(arch);
+            const newImageConfig: BuildahConfigSettings = {
+                entrypoint,
+                port,
+                workingdir: workingDir,
+                envs,
+                arch,
+                labels,
+            };
+            await cli.config(containerId, newImageConfig);
+            await cli.copy(containerId, content);
+            await cli.commit(containerId, `${newImage}-${tagSuffix}`, useOCI);
+        }
+    }
+    else {
+        const newImageConfig: BuildahConfigSettings = {
+            entrypoint,
+            port,
+            workingdir: workingDir,
+            envs,
+            labels,
+        };
+        await cli.config(containerId, newImageConfig);
+        await cli.copy(containerId, content);
+        await cli.commit(containerId, newImage, useOCI);
+    }
+
 }
 
 run().catch(core.setFailed);
