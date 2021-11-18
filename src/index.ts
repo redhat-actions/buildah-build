@@ -58,27 +58,24 @@ export async function run(): Promise<void> {
     const archs = getArch();
     const platforms = getPlatform();
 
-    // core.debug(`Archs ---> ${archs.toString()}`);
-    // core.debug(`Platforms ---> ${platforms.toString()}`);
-
     if ((archs.length > 0) && (platforms.length > 0)) {
         throw new Error("The --platform option may not be used in combination with the --arch option.");
     }
 
+    const builtImage = [];
     if (containerFiles.length !== 0) {
-        await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI,
-            archs, platforms, labelsList);
+        builtImage.push(...await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI,
+            archs, platforms, labelsList));
     }
     else {
         if (platforms.length > 0) {
             throw new Error("The --platform option is not supported for builds without containerfiles.");
         }
-        await doBuildFromScratch(cli, newImage, useOCI, archs, labelsList);
+        builtImage.push(...await doBuildFromScratch(cli, newImage, useOCI, archs, labelsList));
     }
 
     if ((archs.length > 0) || (platforms.length > 0)) {
         core.info(`Creating manifest with tag${tagsList.length !== 1 ? "s" : ""} "${tagsList.join(", ")}"`);
-        const builtImage = [];
         const builtManifest = [];
         for (const tag of tagsList) {
             const manifestName = getFullImageName(image, tag);
@@ -87,13 +84,11 @@ export async function run(): Promise<void> {
 
             for (const arch of archs) {
                 const tagSuffix = removeIllegalCharacters(arch);
-                builtImage.push(`${newImage}-${tagSuffix}`);
                 await cli.manifestAdd(manifestName, `${newImage}-${tagSuffix}`);
             }
 
             for (const platform of platforms) {
                 const tagSuffix = removeIllegalCharacters(platform);
-                builtImage.push(`${newImage}-${tagSuffix}`);
                 await cli.manifestAdd(manifestName, `${newImage}-${tagSuffix}`);
             }
         }
@@ -116,7 +111,7 @@ export async function run(): Promise<void> {
 async function doBuildUsingContainerFiles(
     cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, archs: string[],
     platforms: string[], labels: string[],
-): Promise<void> {
+): Promise<string[]> {
     if (containerFiles.length === 1) {
         core.info(`Performing build from Containerfile`);
     }
@@ -137,7 +132,7 @@ async function doBuildUsingContainerFiles(
         const lines = splitByNewline(inputExtraArgsStr);
         buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
     }
-
+    const builtImage = [];
     // since multi arch image can not have same tag
     // therefore, appending arch/platform in the tag
     if (archs.length > 0 || platforms.length > 0) {
@@ -147,6 +142,7 @@ async function doBuildUsingContainerFiles(
                 `${newImage}-${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
                 useOCI, labels, layers, buildahBudExtraArgs, arch, undefined
             );
+            builtImage.push(`${newImage}-${tagSuffix}`);
         }
 
         for (const platform of platforms) {
@@ -155,6 +151,7 @@ async function doBuildUsingContainerFiles(
                 `${newImage}-${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
                 useOCI, labels, layers, buildahBudExtraArgs, undefined, platform
             );
+            builtImage.push(`${newImage}-${tagSuffix}`);
         }
     }
     else {
@@ -162,12 +159,15 @@ async function doBuildUsingContainerFiles(
             newImage, context, containerFileAbsPaths, buildArgs,
             useOCI, labels, layers, buildahBudExtraArgs
         );
+        builtImage.push(newImage);
     }
+
+    return builtImage;
 }
 
 async function doBuildFromScratch(
     cli: BuildahCli, newImage: string, useOCI: boolean, archs: string[], labels: string[],
-): Promise<void> {
+): Promise<string[]> {
     core.info(`Performing build from scratch`);
 
     const baseImage = core.getInput(Inputs.BASE_IMAGE, { required: true });
@@ -180,6 +180,7 @@ async function doBuildFromScratch(
     const container = await cli.from(baseImage);
     const containerId = container.output.replace("\n", "");
 
+    const builtImage = [];
     if (archs.length > 0) {
         for (const arch of archs) {
             const tagSuffix = removeIllegalCharacters(arch);
@@ -194,6 +195,7 @@ async function doBuildFromScratch(
             await cli.config(containerId, newImageConfig);
             await cli.copy(containerId, content);
             await cli.commit(containerId, `${newImage}-${tagSuffix}`, useOCI);
+            builtImage.push(`${newImage}-${tagSuffix}`);
         }
     }
     else {
@@ -207,8 +209,10 @@ async function doBuildFromScratch(
         await cli.config(containerId, newImageConfig);
         await cli.copy(containerId, content);
         await cli.commit(containerId, newImage, useOCI);
+        builtImage.push(newImage);
     }
 
+    return builtImage;
 }
 
 run().catch(core.setFailed);
