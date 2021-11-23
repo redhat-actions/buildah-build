@@ -56,8 +56,8 @@ jobs:
         uses: ./buildah-build/
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.IMAGE_TAG }}
-          archs: amd64, ppc64le, arm64
+          tags: latest v1
+          archs: amd64                    # Single arch testcase
           containerfiles: |
             ./Containerfile
 
@@ -79,10 +79,6 @@ jobs:
       - name: Run image
         run: |
           podman run --rm ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }}
-
-      - name: Check manifest
-        run: |
-          buildah manifest inspect ${{ steps.build_image_multiarch.outputs.image }}:${{ env.IMAGE_TAG }}
 
   build-multiplatform-containerfile:
     name: Build multi-platform image using Containerfile
