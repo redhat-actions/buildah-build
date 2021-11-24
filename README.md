@@ -205,7 +205,7 @@ There is a simple example [in this issue](https://github.com/redhat-actions/buil
 
 ### Creating a Multi-Arch Image List
 
-Input `archs` and `platforms` is provided to build the multi architecture images. If one of these input is provided then a [manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) is built with the multiple architecture images. Name of the manifest is taken from the inputs `image` and `tags`.
+Input `archs` and `platforms` is provided to build the multi architecture images. If one of these input is provided with the multiple archs or platforms then a [manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) is built with the multiple architecture images. Name of the manifest is taken from the inputs `image` and `tags`.
 Incase multiple tags are provided then multiple manifest is created based on the provided tags.
 
 Use the `archs` and `platforms` inputs to build multi-architecture images. The name of the manifest is determined by the image and tags inputs.
