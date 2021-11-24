@@ -1,5 +1,9 @@
 # buildah-build Changelog
 
+## v2.9
+- Add support for multiple archs and platforms.
+- Allow building image manifest if multi arch or platform is provided.
+
 ## v2.8
 - Allow fully qualified image names in `tags` input, for compatibility with [docker/metadata-action`](https://github.com/docker/metadata-action). [#74](https://github.com/redhat-actions/buildah-build/issues/74)
 - Support for `--platform` argument [#65](https://github.com/redhat-actions/buildah-build/issues/65)
