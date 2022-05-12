@@ -74,9 +74,14 @@ inputs:
     required: false
   extra-args:
     description: |
-      Extra args to be passed to buildah bud.
+      Extra args to be passed to buildah bud and buildah from.
       Separate arguments by newline. Do not use quotes - @actions/exec will do the quoting for you.
     required: false
+  tls-verify:
+    description: |
+      Require HTTPS and verify certificates when accessing the registry. Defaults to true.
+    required: false
+    default: 'true'
 outputs:
   image:
     description: 'Name of the image built'

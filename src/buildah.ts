@@ -22,9 +22,9 @@ interface Buildah {
     buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
         useOCI: boolean, labels: string[], layers: string,
-        extraArgs: string[], arch?: string, platform?: string,
+        extraArgs: string[], tlsVerify: boolean, arch?: string, platform?: string,
     ): Promise<CommandResult>;
-    from(baseImage: string): Promise<CommandResult>;
+    from(baseImage: string, tlsVerify: boolean, extraArgs: string[]): Promise<CommandResult>;
     config(container: string, setting: BuildahConfigSettings): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[]): Promise<CommandResult | undefined>;
     commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult>;
@@ -68,7 +68,7 @@ export class BuildahCli implements Buildah {
     async buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
         useOCI: boolean, labels: string[], layers: string,
-        extraArgs: string[], arch?: string, platform?: string
+        extraArgs: string[], tlsVerify: boolean, arch?: string, platform?: string
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
         if (arch) {
@@ -92,6 +92,7 @@ export class BuildahCli implements Buildah {
             args.push(buildArg);
         });
         args.push(...BuildahCli.getImageFormatOption(useOCI));
+        args.push(`--tls-verify=${tlsVerify}`);
         if (layers) {
             args.push(`--layers=${layers}`);
         }
@@ -104,8 +105,14 @@ export class BuildahCli implements Buildah {
         return this.execute(args);
     }
 
-    async from(baseImage: string): Promise<CommandResult> {
-        return this.execute([ "from", baseImage ]);
+    async from(baseImage: string, tlsVerify: boolean, extraArgs: string[]): Promise<CommandResult> {
+        const args: string[] = [ "from" ];
+        args.push(`--tls-verify=${tlsVerify}`);
+        if (extraArgs.length > 0) {
+            args.push(...extraArgs);
+        }
+        args.push(baseImage);
+        return this.execute(args);
     }
 
     async copy(container: string, contentToCopy: string[], contentPath?: string): Promise<CommandResult | undefined> {

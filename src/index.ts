@@ -57,6 +57,15 @@ export async function run(): Promise<void> {
         tagsList.push(DEFAULT_TAG);
     }
 
+    const inputExtraArgsStr = core.getInput(Inputs.EXTRA_ARGS);
+    let buildahExtraArgs: string[] = [];
+    if (inputExtraArgsStr) {
+        // transform the array of lines into an array of arguments
+        // by splitting over lines, then over spaces, then trimming.
+        const lines = splitByNewline(inputExtraArgsStr);
+        buildahExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
+    }
+
     // check if all tags provided are in `image:tag` format
     const isFullImageNameTag = isFullImageName(normalizedTagsList[0]);
     if (normalizedTagsList.some((tag) => isFullImageName(tag) !== isFullImageNameTag)) {
@@ -79,13 +88,13 @@ export async function run(): Promise<void> {
     const builtImage = [];
     if (containerFiles.length !== 0) {
         builtImage.push(...await doBuildUsingContainerFiles(cli, newImage, workspace, containerFiles, useOCI,
-            archs, platforms, labelsList));
+            archs, platforms, labelsList, buildahExtraArgs));
     }
     else {
         if (platforms.length > 0) {
             throw new Error("The --platform option is not supported for builds without containerfiles.");
         }
-        builtImage.push(...await doBuildFromScratch(cli, newImage, useOCI, archs, labelsList));
+        builtImage.push(...await doBuildFromScratch(cli, newImage, useOCI, archs, labelsList, buildahExtraArgs));
     }
 
     if ((archs.length > 1) || (platforms.length > 1)) {
@@ -125,7 +134,7 @@ export async function run(): Promise<void> {
 
 async function doBuildUsingContainerFiles(
     cli: BuildahCli, newImage: string, workspace: string, containerFiles: string[], useOCI: boolean, archs: string[],
-    platforms: string[], labels: string[],
+    platforms: string[], labels: string[], extraArgs: string[]
 ): Promise<string[]> {
     if (containerFiles.length === 1) {
         core.info(`Performing build from Containerfile`);
@@ -138,15 +147,8 @@ async function doBuildUsingContainerFiles(
     const buildArgs = getInputList(Inputs.BUILD_ARGS);
     const containerFileAbsPaths = containerFiles.map((file) => path.join(workspace, file));
     const layers = core.getInput(Inputs.LAYERS);
+    const tlsVerify = core.getInput(Inputs.TLS_VERIFY) === "true";
 
-    const inputExtraArgsStr = core.getInput(Inputs.EXTRA_ARGS);
-    let buildahBudExtraArgs: string[] = [];
-    if (inputExtraArgsStr) {
-        // transform the array of lines into an array of arguments
-        // by splitting over lines, then over spaces, then trimming.
-        const lines = splitByNewline(inputExtraArgsStr);
-        buildahBudExtraArgs = lines.flatMap((line) => line.split(" ")).map((arg) => arg.trim());
-    }
     const builtImage = [];
     // since multi arch image can not have same tag
     // therefore, appending arch/platform in the tag
@@ -160,7 +162,7 @@ async function doBuildUsingContainerFiles(
             }
             await cli.buildUsingDocker(
                 `${newImage}${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
-                useOCI, labels, layers, buildahBudExtraArgs, arch, undefined
+                useOCI, labels, layers, extraArgs, tlsVerify, arch, undefined
             );
             builtImage.push(`${newImage}${tagSuffix}`);
         }
@@ -172,7 +174,7 @@ async function doBuildUsingContainerFiles(
             }
             await cli.buildUsingDocker(
                 `${newImage}${tagSuffix}`, context, containerFileAbsPaths, buildArgs,
-                useOCI, labels, layers, buildahBudExtraArgs, undefined, platform
+                useOCI, labels, layers, extraArgs, tlsVerify, undefined, platform
             );
             builtImage.push(`${newImage}${tagSuffix}`);
         }
@@ -181,14 +183,14 @@ async function doBuildUsingContainerFiles(
     else if (archs.length === 1 || platforms.length === 1) {
         await cli.buildUsingDocker(
             newImage, context, containerFileAbsPaths, buildArgs,
-            useOCI, labels, layers, buildahBudExtraArgs, archs[0], platforms[0]
+            useOCI, labels, layers, extraArgs, tlsVerify, archs[0], platforms[0]
         );
         builtImage.push(newImage);
     }
     else {
         await cli.buildUsingDocker(
             newImage, context, containerFileAbsPaths, buildArgs,
-            useOCI, labels, layers, buildahBudExtraArgs
+            useOCI, labels, layers, extraArgs, tlsVerify
         );
         builtImage.push(newImage);
     }
@@ -197,7 +199,7 @@ async function doBuildUsingContainerFiles(
 }
 
 async function doBuildFromScratch(
-    cli: BuildahCli, newImage: string, useOCI: boolean, archs: string[], labels: string[],
+    cli: BuildahCli, newImage: string, useOCI: boolean, archs: string[], labels: string[], extraArgs: string[]
 ): Promise<string[]> {
     core.info(`Performing build from scratch`);
 
@@ -207,8 +209,9 @@ async function doBuildFromScratch(
     const port = core.getInput(Inputs.PORT);
     const workingDir = core.getInput(Inputs.WORKDIR);
     const envs = getInputList(Inputs.ENVS);
+    const tlsVerify = core.getInput(Inputs.TLS_VERIFY) === "true";
 
-    const container = await cli.from(baseImage);
+    const container = await cli.from(baseImage, tlsVerify, extraArgs);
     const containerId = container.output.replace("\n", "");
 
     const builtImage = [];

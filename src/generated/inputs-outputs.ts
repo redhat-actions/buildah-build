@@ -62,7 +62,7 @@ export enum Inputs {
      */
     ENVS = "envs",
     /**
-     * Extra args to be passed to buildah bud.
+     * Extra args to be passed to buildah bud and buildah from.
      * Separate arguments by newline. Do not use quotes - @actions/exec will do the quoting for you.
      * Required: false
      * Default: None.
@@ -118,6 +118,12 @@ export enum Inputs {
      * Default: "latest"
      */
     TAGS = "tags",
+    /**
+     * Require HTTPS and verify certificates when accessing the registry. Defaults to true.
+     * Required: false
+     * Default: "true"
+     */
+    TLS_VERIFY = "tls-verify",
     /**
      * The working directory to use within the container
      * Required: false
