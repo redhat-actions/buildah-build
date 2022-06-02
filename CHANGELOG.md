@@ -1,5 +1,10 @@
 # buildah-build Changelog
 
+## v2.10
+- Make image and tag in lowercase, if found in uppercase. https://github.com/redhat-actions/buildah-build/issues/89
+- Add `--tls-verify` and `extra-args` input for `buildah from` command. https://github.com/redhat-actions/buildah-build/issues/92
+- Remove kubic packages from test workflows. https://github.com/redhat-actions/buildah-build/issues/93
+
 ## v2.9
 - Add support for multiple archs and platforms.
 - Allow building image manifest if multi arch or platform is provided.
