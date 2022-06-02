@@ -53,7 +53,7 @@ jobs:
       # Download the m2 repository from the cache to speed up the build.
       - name: Check for Maven cache
         id: check-mvn-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.MVN_REPO_DIR }}
           key: ${{ env.MVN_HASH }}
@@ -73,7 +73,7 @@ jobs:
        # If there was no cache hit above, store the output into the cache now.
       - name: Save Maven repo into cache
         if: ${{ steps.check-mvn-cache.outputs.cache-hit }} != 'true'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.MVN_REPO_DIR }}
           key: ${{ env.MVN_HASH }}
