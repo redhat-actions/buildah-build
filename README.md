@@ -30,12 +30,13 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
 | containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. Separate filenames by newline. | **Required**
-| extra-args | Extra args to be passed to buildah bud. Separate arguments by newline. Do not use quotes. | None
+| extra-args | Extra args to be passed to `buildah bud`. Separate arguments by newline. Do not use quotes. | None
 | image | Name to give to the output image. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | **Required** - unless all `tags` include image name
 | layers | Set to true to cache intermediate layers during the build process. | None
 | oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
 | tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
 | labels | One or more labels to give the new image. Separate by newline. | None
+| tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification | `true`
 
 > \* The `containerfiles` input was previously `dockerfiles`. Refer to [this issue](https://github.com/redhat-actions/buildah-build/issues/57).
 
@@ -56,6 +57,8 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
 | labels | One or more labels to give the new image. Separate by newline. | None
 | workdir | The working directory to use within the container. | None
+| extra-args | Extra args to be passed to `buildah from`. Separate arguments by newline. Do not use quotes. | None
+| tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification. This will be used with `buildah from` command. | `true`
 
 <a id="image-tag-inputs"></a>
 ### Image and Tags Inputs
