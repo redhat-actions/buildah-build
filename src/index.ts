@@ -37,6 +37,20 @@ export async function run(): Promise<void> {
     const labels = core.getInput(Inputs.LABELS);
     const labelsList: string[] = labels ? splitByNewline(labels) : [];
 
+    const normalizedTagsList: string[] = [];
+    let isNormalized = false;
+    for (const tag of tagsList) {
+        normalizedTagsList.push(tag.toLowerCase());
+        if (tag.toLowerCase() !== tag) {
+            isNormalized = true;
+        }
+    }
+    const normalizedImage = image.toLowerCase();
+    if (isNormalized || image !== normalizedImage) {
+        core.warning(`Reference to image and/or tag must be lowercase.`
+        + ` Reference has been converted to be compliant with standard.`);
+    }
+
     // info message if user doesn't provides any tag
     if (tagsList.length === 0) {
         core.info(`Input "${Inputs.TAGS}" is not provided, using default tag "${DEFAULT_TAG}"`);
@@ -44,15 +58,15 @@ export async function run(): Promise<void> {
     }
 
     // check if all tags provided are in `image:tag` format
-    const isFullImageNameTag = isFullImageName(tagsList[0]);
-    if (tagsList.some((tag) => isFullImageName(tag) !== isFullImageNameTag)) {
+    const isFullImageNameTag = isFullImageName(normalizedTagsList[0]);
+    if (normalizedTagsList.some((tag) => isFullImageName(tag) !== isFullImageNameTag)) {
         throw new Error(`Input "${Inputs.TAGS}" cannot have a mix of full name and non full name tags. Refer to https://github.com/redhat-actions/buildah-build#image-tag-inputs`);
     }
-    if (!isFullImageNameTag && !image) {
+    if (!isFullImageNameTag && !normalizedImage) {
         throw new Error(`Input "${Inputs.IMAGE}" must be provided when not using full image name tags. Refer to https://github.com/redhat-actions/buildah-build#image-tag-inputs`);
     }
 
-    const newImage = getFullImageName(image, tagsList[0]);
+    const newImage = getFullImageName(normalizedImage, normalizedTagsList[0]);
     const useOCI = core.getInput(Inputs.OCI) === "true";
 
     const archs = getArch();
@@ -75,10 +89,11 @@ export async function run(): Promise<void> {
     }
 
     if ((archs.length > 1) || (platforms.length > 1)) {
-        core.info(`Creating manifest with tag${tagsList.length !== 1 ? "s" : ""} "${tagsList.join(", ")}"`);
+        core.info(`Creating manifest with tag${normalizedTagsList.length !== 1 ? "s" : ""} `
+            + `"${normalizedTagsList.join(", ")}"`);
         const builtManifest = [];
-        for (const tag of tagsList) {
-            const manifestName = getFullImageName(image, tag);
+        for (const tag of normalizedTagsList) {
+            const manifestName = getFullImageName(normalizedImage, tag);
             await cli.manifestCreate(manifestName);
             builtManifest.push(manifestName);
 
@@ -96,14 +111,14 @@ export async function run(): Promise<void> {
         core.info(`✅ Successfully built image${builtImage.length !== 1 ? "s" : ""} "${builtImage.join(", ")}" `
             + `and manifest${builtManifest.length !== 1 ? "s" : ""} "${builtManifest.join(", ")}"`);
     }
-    else if (tagsList.length > 1) {
-        await cli.tag(image, tagsList);
+    else if (normalizedTagsList.length > 1) {
+        await cli.tag(normalizedImage, normalizedTagsList);
     }
-    else if (tagsList.length === 1) {
-        core.info(`✅ Successfully built image "${getFullImageName(image, tagsList[0])}"`);
+    else if (normalizedTagsList.length === 1) {
+        core.info(`✅ Successfully built image "${getFullImageName(normalizedImage, normalizedTagsList[0])}"`);
     }
 
-    core.setOutput(Outputs.IMAGE, image);
+    core.setOutput(Outputs.IMAGE, normalizedImage);
     core.setOutput(Outputs.TAGS, tags);
     core.setOutput(Outputs.IMAGE_WITH_TAG, newImage);
 }
