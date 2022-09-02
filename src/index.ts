@@ -112,6 +112,9 @@ export async function run(): Promise<void> {
         const builtManifest = [];
         for (const tag of normalizedTagsList) {
             const manifestName = getFullImageName(normalizedImage, tag);
+            const manifestExists = await cli.manifestExists(manifestName);
+            if (manifestExists) {await cli.manifestRm(manifestName)};
+
             await cli.manifestCreate(manifestName);
             builtManifest.push(manifestName);
 

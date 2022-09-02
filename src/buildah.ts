@@ -201,6 +201,22 @@ export class BuildahCli implements Buildah {
         core.info(`✅ Successfully built image${builtImage.length !== 1 ? "s" : ""} "${builtImage.join(", ")}"`);
     }
 
+    async manifestExists(manifest: string): Promise<boolean> {
+        const args: string[] = [ "manifest", "exists" ];
+        args.push(manifest);
+        const execOptions: exec.ExecOptions = {ignoreReturnCode: true};
+        core.info(`Checking if manifest ${manifest} exists`);
+        const {exitCode} = await this.execute(args, execOptions);
+        return exitCode ? false : true;
+    }
+
+    async manifestRm(manifest: string): Promise<void> {
+        const args: string[] = [ "manifest", "rm" ];
+        args.push(manifest);
+        core.info(`Removing existing manifest ${manifest}`);
+        await this.execute(args);
+    }
+
     async manifestCreate(manifest: string): Promise<void> {
         const args: string[] = [ "manifest", "create" ];
         args.push(manifest);
