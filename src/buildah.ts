@@ -201,20 +201,24 @@ export class BuildahCli implements Buildah {
         core.info(`✅ Successfully built image${builtImage.length !== 1 ? "s" : ""} "${builtImage.join(", ")}"`);
     }
 
-    async manifestExists(manifest: string): Promise<boolean> {
-        const args: string[] = [ "manifest", "exists" ];
-        args.push(manifest);
-        const execOptions: exec.ExecOptions = {ignoreReturnCode: true};
-        core.info(`Checking if manifest ${manifest} exists`);
-        const {exitCode} = await this.execute(args, execOptions);
-        return exitCode ? false : true;
-    }
+    // Unfortunately buildah doesn't support the exists command yet
+    // https://github.com/containers/buildah/issues/4217
+
+    // async manifestExists(manifest: string): Promise<boolean> {
+    //     const args: string[] = [ "manifest", "exists" ];
+    //     args.push(manifest);
+    //     const execOptions: exec.ExecOptions = {ignoreReturnCode: true};
+    //     core.info(`Checking if manifest ${manifest} exists`);
+    //     const {exitCode} = await this.execute(args, execOptions);
+    //     return exitCode ? false : true;
+    // }
 
     async manifestRm(manifest: string): Promise<void> {
+        const execOptions: exec.ExecOptions = { ignoreReturnCode: true };
         const args: string[] = [ "manifest", "rm" ];
         args.push(manifest);
         core.info(`Removing existing manifest ${manifest}`);
-        await this.execute(args);
+        await this.execute(args, execOptions);
     }
 
     async manifestCreate(manifest: string): Promise<void> {
