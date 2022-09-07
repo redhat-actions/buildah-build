@@ -73,7 +73,7 @@ export function getArch(): string[] {
     if (arch && archs.length > 0) {
         core.warning(
             `Both "${Inputs.ARCH}" and "${Inputs.ARCHS}" inputs are set. `
-            + `Please use "${Inputs.ARCH}" if you want to provide multiple `
+            + `Please use "${Inputs.ARCHS}" if you want to provide multiple `
             + `ARCH else use ${Inputs.ARCH}". "${Inputs.ARCHS}" takes preference.`
         );
     }
