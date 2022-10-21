@@ -90,5 +90,5 @@ outputs:
   image-with-tag:
     description: 'Name of the image tagged with the first tag present'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
