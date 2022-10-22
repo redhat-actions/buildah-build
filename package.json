@@ -1,8 +1,8 @@
 {
   "name": "buildah-build",
-  "version": "1.0.0",
+  "version": "3.0",
   "engines": {
-    "node": "12"
+    "node": "16"
   },
   "description": "Action for building OCI-compatible images using buildah",
   "repository": {
