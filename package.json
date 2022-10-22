@@ -21,21 +21,21 @@
   "author": "Red Hat",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.9.1",
-    "@actions/exec": "^1.0.4",
-    "@actions/io": "^1.0.2",
-    "ini": "^2.0.0"
+    "@actions/core": "1.10.0",
+    "@actions/exec": "1.1.1",
+    "@actions/io": "1.1.2",
+    "ini": "3.0.1"
   },
   "devDependencies": {
-    "@redhat-actions/action-io-generator": "^1.5.0",
-    "@redhat-actions/eslint-config": "^1.3.2",
-    "@redhat-actions/tsconfig": "^1.1.1",
-    "@types/ini": "^1.3.30",
-    "@types/node": "^12",
-    "@typescript-eslint/eslint-plugin": "^4.28.2",
-    "@typescript-eslint/parser": "^4.28.2",
-    "@vercel/ncc": "^0.25.1",
-    "eslint": "^7.30.0",
-    "typescript": "^4.3.5"
+    "@redhat-actions/action-io-generator": "1.5.0",
+    "@redhat-actions/eslint-config": "1.3.2",
+    "@redhat-actions/tsconfig": "1.2.0",
+    "@types/ini": "1.3.31",
+    "@types/node": "16.11.68",
+    "@typescript-eslint/eslint-plugin": "5.40.1",
+    "@typescript-eslint/parser": "5.40.1",
+    "@vercel/ncc": "0.34.0",
+    "eslint": "8.26.0",
+    "typescript": "4.8.4"
   }
 }
