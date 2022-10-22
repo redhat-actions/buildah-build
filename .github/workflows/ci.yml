@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: npm ci
       - run: npm run lint
-  
+
   check-dist:
     name: Check Distribution
     runs-on: ubuntu-20.04
@@ -20,7 +20,7 @@ jobs:
       BUNDLE_FILE: "dist/index.js"
       BUNDLE_COMMAND: "npm run bundle"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install
         run: npm ci
@@ -30,18 +30,18 @@ jobs:
         with:
           bundle_file: ${{ env.BUNDLE_FILE }}
           bundle_command: ${{ env.BUNDLE_COMMAND }}
-  
+
   check-inputs-outputs:
     name: Check Input and Output enums
     runs-on: ubuntu-20.04
     env:
       IO_FILE: ./src/generated/inputs-outputs.ts
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install dependencies
         run: npm ci
-    
+
       - name: Verify Input and Output enums
         uses: redhat-actions/common/action-io-generator@v1
         with:
