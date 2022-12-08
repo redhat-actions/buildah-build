@@ -66,9 +66,17 @@ export class BuildahCli implements Buildah {
     }
 
     async buildUsingDocker(
-        image: string, context: string, containerFiles: string[], buildArgs: string[],
-        useOCI: boolean, labels: string[], layers: string,
-        extraArgs: string[], tlsVerify: boolean, arch?: string, platform?: string
+        image: string,
+        context: string,
+        containerFiles: string[],
+        buildArgs: string[],
+        useOCI: boolean,
+        labels: string[],
+        layers: string,
+        extraArgs: string[],
+        tlsVerify: boolean,
+        arch?: string,
+        platform?: string
     ): Promise<CommandResult> {
         const args: string[] = [ "bud" ];
         if (arch) {
