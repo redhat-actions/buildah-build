@@ -55,7 +55,9 @@ export async function findFuseOverlayfsPath(): Promise<string | undefined> {
         fuseOverlayfsPath = await io.which("fuse-overlayfs");
     }
     catch (err) {
-        core.debug(err);
+        if (err instanceof Error) {
+            core.debug(err.message);
+        }
     }
 
     return fuseOverlayfsPath;

@@ -27,7 +27,7 @@ jobs:
 
       # Checkout buildah action github repository
       - name: Checkout Buildah action
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: "buildah-build"
 
@@ -38,45 +38,24 @@ jobs:
 
       # Checkout spring-petclinic github repository
       - name: Checkout spring-petclinic project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: "spring-projects/spring-petclinic"
           path: ${{ env.PROJECT_DIR }}
 
-      # If none of these files has changed, we assume that the contents of
-      # .m2/repository can be fetched from the cache.
-      - name: Hash Maven files
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          echo "MVN_HASH=${{ hashFiles('**/pom.xml', '.mvn/**/*', 'mvnw*') }}" >> $GITHUB_ENV
-
-      # Download the m2 repository from the cache to speed up the build.
-      - name: Check for Maven cache
-        id: check-mvn-cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.MVN_REPO_DIR }}
-          key: ${{ env.MVN_HASH }}
-
       # Setup java.
       - name: Setup Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
 
       # Run maven to build the project
       - name: Maven
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           mvn package -ntp -B
-
-       # If there was no cache hit above, store the output into the cache now.
-      - name: Save Maven repo into cache
-        if: ${{ steps.check-mvn-cache.outputs.cache-hit }} != 'true'
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.MVN_REPO_DIR }}
-          key: ${{ env.MVN_HASH }}
 
       # Build image using Buildah action
       - name: Build Image
