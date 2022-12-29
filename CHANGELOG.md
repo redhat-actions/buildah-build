@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.11 
+- Update action to run on Node16. https://github.blog/changelog/2022-05-20-actions-can-now-run-in-a-node-js-16-runtime/
+
 ## v2.10
 - Make image and tag in lowercase, if found in uppercase. https://github.com/redhat-actions/buildah-build/issues/89
 - Add `--tls-verify` and `extra-args` input for `buildah from` command. https://github.com/redhat-actions/buildah-build/issues/92
