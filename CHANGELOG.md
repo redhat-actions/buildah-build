@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.12
+- Forcibly remove existing manifest before creating a new one. [#103](https://github.com/redhat-actions/buildah-build/pull/103)
+
 ## v2.11 
 - Update action to run on Node16. https://github.blog/changelog/2022-05-20-actions-can-now-run-in-a-node-js-16-runtime/
 
