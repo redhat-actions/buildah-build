@@ -8,7 +8,7 @@ export enum Inputs {
     ARCH = "arch",
     /**
      * 'Same as input 'arch', use this for multiple architectures.
-     * Seperate them by a comma'
+     * Separate them by a comma'
      * Required: false
      * Default: None.
      */
@@ -75,7 +75,7 @@ export enum Inputs {
      */
     IMAGE = "image",
     /**
-     * The labels of the image to build. Seperate by newline. For example, "io.containers.capabilities=sys_admin,mknod".
+     * The labels of the image to build. Separate by newline. For example, "io.containers.capabilities=sys_admin,mknod".
      * Required: false
      * Default: None.
      */
@@ -101,7 +101,7 @@ export enum Inputs {
     PLATFORM = "platform",
     /**
      * 'Same as input 'platform', use this for multiple platforms.
-     * Seperate them by a comma'
+     * Separate them by a comma'
      * Required: false
      * Default: None.
      */
@@ -113,7 +113,13 @@ export enum Inputs {
      */
     PORT = "port",
     /**
-     * The tags of the image to build. For multiple tags, seperate by whitespace. For example, "latest v1".
+     * Configure storage-overlay auto-detection
+     * Required: false
+     * Default: "true"
+     */
+    STORAGE_OVERLAY = "storage-overlay",
+    /**
+     * The tags of the image to build. For multiple tags, separate by whitespace. For example, "latest v1".
      * Required: false
      * Default: "latest"
      */

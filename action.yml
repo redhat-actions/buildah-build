@@ -9,11 +9,11 @@ inputs:
     description: 'The name (reference) of the image to build'
     required: false
   tags:
-    description: 'The tags of the image to build. For multiple tags, seperate by whitespace. For example, "latest v1".'
+    description: 'The tags of the image to build. For multiple tags, separate by whitespace. For example, "latest v1".'
     required: false
     default: latest
   labels:
-    description: 'The labels of the image to build. Seperate by newline. For example, "io.containers.capabilities=sys_admin,mknod".'
+    description: 'The labels of the image to build. Separate by newline. For example, "io.containers.capabilities=sys_admin,mknod".'
     required: false
   base-image:
     description: 'The base image to use to create a new container image'
@@ -60,7 +60,7 @@ inputs:
   archs:
     description: |
       'Same as input 'arch', use this for multiple architectures.
-      Seperate them by a comma'
+      Separate them by a comma'
     required: false
   platform:
     description: |
@@ -70,7 +70,7 @@ inputs:
   platforms:
     description: |
       'Same as input 'platform', use this for multiple platforms.
-      Seperate them by a comma'
+      Separate them by a comma'
     required: false
   extra-args:
     description: |
@@ -80,6 +80,11 @@ inputs:
   tls-verify:
     description: |
       Require HTTPS and verify certificates when accessing the registry. Defaults to true.
+    required: false
+    default: 'true'
+  storage-overlay:
+    description: |
+      Configure storage-overlay auto-detection
     required: false
     default: 'true'
 outputs:
