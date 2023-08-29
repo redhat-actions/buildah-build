@@ -130,6 +130,12 @@ export enum Inputs {
      * Default: None.
      */
     WORKDIR = "workdir",
+    /**
+     * If you are running on self hosted runner, you can set this so it will add "sudo" to every buildah command if you dont want to run rootless. Defaults to false
+     * Required: false
+     * Default: "false"
+     */
+    SELF_HOSTED_RUNNER_ROOT = "self-hosted-runner-root",
 }
 
 export enum Outputs {

@@ -19,8 +19,10 @@ export async function run(): Promise<void> {
     }
 
     // get buildah cli
+    const self_hosted_runner = core.getInput(Inputs.SELF_HOSTED_RUNNER_ROOT)
     const buildahPath = await io.which("buildah", true);
-    const cli: BuildahCli = new BuildahCli(buildahPath);
+    const buildahExec = self_hosted_runner === "true" ? `sudo ${buildahPath}` : buildahPath;
+    const cli: BuildahCli = new BuildahCli(buildahExec);
 
     // print buildah version
     await cli.execute([ "version" ], { group: true });

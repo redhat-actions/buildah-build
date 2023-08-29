@@ -59,7 +59,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | workdir | The working directory to use within the container. | None
 | extra-args | Extra args to be passed to `buildah from`. Separate arguments by newline. Do not use quotes. | None
 | tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification. This will be used with `buildah from` command. | `true`
-
+| self-hosted-runner-root | If you are running on self hosted runner, you can set this so it will add "sudo" to every buildah command if you dont want to run rootless |`false`
 <a id="image-tag-inputs"></a>
 ### Image and Tags Inputs
 The `image` and `tags` inputs can be provided in one of two forms.
