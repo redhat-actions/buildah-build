@@ -4522,6 +4522,12 @@ var Inputs;
      * Default: None.
      */
     Inputs["WORKDIR"] = "workdir";
+    /**
+     * If you are running on self hosted runner, you can set this so it will add "sudo" to every buildah command if you dont want to run rootless. Defaults to false
+     * Required: false
+     * Default: "false"
+     */
+    Inputs["SELF_HOSTED_RUNNER_ROOT"] = "self-hosted-runner-root";
 })(Inputs || (Inputs = {}));
 var Outputs;
 (function (Outputs) {
@@ -4952,8 +4958,10 @@ async function run() {
         throw new Error("buildah, and therefore this action, only works on Linux. Please use a Linux runner.");
     }
     // get buildah cli
+    const self_hosted_runner = core.getInput(Inputs.SELF_HOSTED_RUNNER_ROOT);
     const buildahPath = await io.which("buildah", true);
-    const cli = new BuildahCli(`sudo ${buildahPath}`);
+    const buildahExec = self_hosted_runner === "true" ? `sudo ${buildahPath}` : buildahPath;
+    const cli = new BuildahCli(buildahExec);
     // print buildah version
     await cli.execute(["version"], { group: true });
     // Check if fuse-overlayfs exists and find the storage driver
