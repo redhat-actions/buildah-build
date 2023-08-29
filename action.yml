@@ -82,6 +82,12 @@ inputs:
       Require HTTPS and verify certificates when accessing the registry. Defaults to true.
     required: false
     default: 'true'
+  self-hosted-runner-root:
+    description: |
+      If you are running on self hosted runner, you can set this so it will add "sudo" to every 
+      buildah command if you dont want to run rootless. Defaults to false
+    required: false
+    default: 'false'
 outputs:
   image:
     description: 'Name of the image built'
