@@ -9,16 +9,16 @@ on:
 
 jobs:
   crda-scan:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Scan project vulnerability with CRDA
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install CRDA

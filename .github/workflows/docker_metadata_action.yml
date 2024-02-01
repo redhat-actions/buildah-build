@@ -12,7 +12,7 @@ on:
 jobs:
   build-containerfile:
     name: Build image with Containerfile
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +25,7 @@ jobs:
 
       # Checkout buildah action github repository
       - name: Checkout Buildah action
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Docker Metadata
         id: docker-metadata
@@ -88,7 +88,7 @@ jobs:
 
   build-scratch:
     name: Build image without Containerfile
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -103,7 +103,7 @@ jobs:
 
       # Checkout buildah action github repository
       - name: Checkout Buildah action
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Docker Metadata
         id: docker-metadata
@@ -128,7 +128,7 @@ jobs:
 
       # Checkout spring-petclinic github repository
       - name: Checkout spring-petclinic project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: "spring-projects/spring-petclinic"
           path: ${{ env.PROJECT_DIR }}
