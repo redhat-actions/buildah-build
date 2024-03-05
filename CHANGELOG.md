@@ -1,5 +1,8 @@
 # buildah-build Changelog
 
+## v2.13
+- Update action to run on Node20. https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/
+
 ## v2.12
 - Forcibly remove existing manifest before creating a new one. [#103](https://github.com/redhat-actions/buildah-build/pull/103)
 
