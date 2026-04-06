@@ -29,7 +29,7 @@ jobs:
 
       - name: Docker Metadata
         id: docker-metadata
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v6
         with:
           images: |
             ${{ env.IMAGE_NAME }}
@@ -107,7 +107,7 @@ jobs:
 
       - name: Docker Metadata
         id: docker-metadata
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v6
         with:
           images: |
             ${{ env.IMAGE_NAME }}
@@ -128,14 +128,14 @@ jobs:
 
       # Checkout spring-petclinic github repository
       - name: Checkout spring-petclinic project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: "spring-projects/spring-petclinic"
           path: ${{ env.PROJECT_DIR }}
 
       # Setup java.
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'

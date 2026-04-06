@@ -92,5 +92,5 @@ outputs:
   digest:
     description: 'Digest of the built image'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'
