@@ -2,7 +2,7 @@
   "name": "buildah-build",
   "version": "3.0",
   "engines": {
-    "node": "20"
+    "node": "24"
   },
   "description": "Action for building OCI-compatible images using buildah",
   "repository": {
@@ -31,7 +31,7 @@
     "@redhat-actions/eslint-config": "1.3.2",
     "@redhat-actions/tsconfig": "1.2.0",
     "@types/ini": "1.3.31",
-    "@types/node": "^20.0",
+    "@types/node": "^24.0",
     "@typescript-eslint/eslint-plugin": "6.7.3",
     "@typescript-eslint/parser": "6.7.3",
     "@vercel/ncc": "0.38.0",

@@ -26,7 +26,7 @@ jobs:
 
       # Checkout buildah action github repository
       - name: Checkout Buildah action
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: "buildah-build"
 
