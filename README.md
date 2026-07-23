@@ -29,7 +29,7 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 | platforms | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple platforms, seperate them by a comma | None (host platform)
 | build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | context | Path to directory to use as the build context. | `.`
-| containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. Separate filenames by newline. | **Required**
+| containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. Separate filenames by newline. These are absolute paths, i.e they ignore the `context`. | **Required**
 | extra-args | Extra args to be passed to `buildah bud`. Separate arguments by newline. Do not use quotes. | None
 | image | Name to give to the output image. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | **Required** - unless all `tags` include image name
 | layers | Set to true to cache intermediate layers during the build process. | None
