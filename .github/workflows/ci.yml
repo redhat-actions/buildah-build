@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Verify Latest Bundle
-        uses: redhat-actions/common/bundle-verifier@v1
+        uses: redhat-actions/common/bundle-verifier@v2
         with:
           bundle_file: ${{ env.BUNDLE_FILE }}
           bundle_command: ${{ env.BUNDLE_COMMAND }}
@@ -54,6 +54,6 @@ jobs:
         run: npm ci
 
       - name: Verify Input and Output enums
-        uses: redhat-actions/common/action-io-generator@v1
+        uses: redhat-actions/common/action-io-generator@v2
         with:
           io_file: ${{ env.IO_FILE }}
