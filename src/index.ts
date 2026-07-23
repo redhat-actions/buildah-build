@@ -152,6 +152,25 @@ export async function run(): Promise<void> {
     core.setOutput(Outputs.DIGEST, digest);
 }
 
+async function verifyImageArch(cli: BuildahCli, image: string, expectedArch: string): Promise<void> {
+    try {
+        const result = await cli.inspectArch(image);
+        const actualArch = result.output.trim();
+        if (actualArch && actualArch !== expectedArch) {
+            core.warning(
+                `Image "${image}" was requested for architecture "${expectedArch}" `
+                + `but was actually built for "${actualArch}". `
+                + `This usually means the base image does not support the "${expectedArch}" architecture. `
+                + `The resulting image will not run correctly on ${expectedArch} systems.`
+            );
+        }
+    }
+    catch (_err) {
+        // Don't fail the build if arch verification fails — it's a best-effort check
+        core.debug(`Could not verify architecture for image "${image}"`);
+    }
+}
+
 async function doBuildUsingContainerFiles(
     cli: BuildahCli,
     newImage: string,
@@ -206,8 +225,9 @@ async function doBuildUsingContainerFiles(
             if (archs.length > 1) {
                 tagSuffix = `-${removeIllegalCharacters(arch)}`;
             }
+            const imageTag = `${newImage}${tagSuffix}`;
             await cli.buildUsingDocker(
-                `${newImage}${tagSuffix}`,
+                imageTag,
                 context,
                 containerFileAbsPaths,
                 buildArgs,
@@ -219,7 +239,8 @@ async function doBuildUsingContainerFiles(
                 tlsVerify,
                 arch
             );
-            builtImage.push(`${newImage}${tagSuffix}`);
+            await verifyImageArch(cli, imageTag, arch);
+            builtImage.push(imageTag);
         }
 
         for (const platform of platforms) {
@@ -227,8 +248,11 @@ async function doBuildUsingContainerFiles(
             if (platforms.length > 1) {
                 tagSuffix = `-${removeIllegalCharacters(platform)}`;
             }
+            const imageTag = `${newImage}${tagSuffix}`;
+            // Platform format is os/arch (e.g., linux/arm64)
+            const expectedArch = platform.includes("/") ? platform.split("/")[1] : platform;
             await cli.buildUsingDocker(
-                `${newImage}${tagSuffix}`,
+                imageTag,
                 context,
                 containerFileAbsPaths,
                 buildArgs,
@@ -241,7 +265,8 @@ async function doBuildUsingContainerFiles(
                 undefined,
                 platform
             );
-            builtImage.push(`${newImage}${tagSuffix}`);
+            await verifyImageArch(cli, imageTag, expectedArch);
+            builtImage.push(imageTag);
         }
     }
 
