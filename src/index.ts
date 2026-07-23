@@ -214,13 +214,12 @@ async function doBuildUsingContainerFiles(
     const layers = core.getInput(Inputs.LAYERS);
     const tlsVerify = core.getInput(Inputs.TLS_VERIFY) === "true";
 
-    const builtImage = [];
+    const builtImage: string[] = [];
     // since multi arch image can not have same tag
     // therefore, appending arch/platform in the tag
     if (archs.length > 0 || platforms.length > 0) {
-        for (const arch of archs) {
-            // handling it seperately as, there is no need of
-            // tagSuffix if only one image has to be built
+        // Build all architectures in parallel for faster multi-arch builds
+        const archBuilds = archs.map(async (arch) => {
             let tagSuffix = "";
             if (archs.length > 1) {
                 tagSuffix = `-${removeIllegalCharacters(arch)}`;
@@ -240,10 +239,10 @@ async function doBuildUsingContainerFiles(
                 arch
             );
             await verifyImageArch(cli, imageTag, arch);
-            builtImage.push(imageTag);
-        }
+            return imageTag;
+        });
 
-        for (const platform of platforms) {
+        const platformBuilds = platforms.map(async (platform) => {
             let tagSuffix = "";
             if (platforms.length > 1) {
                 tagSuffix = `-${removeIllegalCharacters(platform)}`;
@@ -266,8 +265,11 @@ async function doBuildUsingContainerFiles(
                 platform
             );
             await verifyImageArch(cli, imageTag, expectedArch);
-            builtImage.push(imageTag);
-        }
+            return imageTag;
+        });
+
+        const results = await Promise.all([ ...archBuilds, ...platformBuilds ]);
+        builtImage.push(...results);
     }
 
     else if (archs.length === 1 || platforms.length === 1) {
