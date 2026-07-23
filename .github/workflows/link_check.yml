@@ -7,7 +7,7 @@ on:
     paths:
       - '**.md'
   schedule:
-    - cron: '0 0 * * *'  # every day at midnight
+    - cron: '0 0 * * 1'  # every Monday at midnight
 
 permissions:
   contents: read
@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - uses: tcort/github-action-markdown-link-check@v1
         with:
           use-verbose-mode: true
+          config-file: .github/markdown-link-check-config.json
