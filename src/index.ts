@@ -23,11 +23,21 @@ export async function run(): Promise<void> {
     const buildahPath = await io.which("buildah", true);
     const cli: BuildahCli = new BuildahCli(buildahPath);
 
+    // Check if user wants to run buildah from a container image
+    const buildahImage = core.getInput(Inputs.BUILDAH_IMAGE);
+    if (buildahImage) {
+        const podmanPath = await io.which("podman", true);
+        const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+        await cli.enableContainerMode(buildahImage, podmanPath, workspace);
+    }
+
     // print buildah version
     await cli.execute([ "version" ], { group: true });
 
     // Check if fuse-overlayfs exists and find the storage driver
-    await cli.setStorageOptsEnv();
+    if (!buildahImage) {
+        await cli.setStorageOptsEnv();
+    }
 
     const DEFAULT_TAG = "latest";
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();

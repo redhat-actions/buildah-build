@@ -5,7 +5,6 @@
 
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
-import * as path from "path";
 import CommandResult from "./types";
 import { isStorageDriverOverlay, findFuseOverlayfsPath, getFullImageName } from "./utils";
 
@@ -40,10 +39,25 @@ interface Buildah {
 export class BuildahCli implements Buildah {
     private readonly executable: string;
 
+    private containerImage = "";
+
+    private podmanPath = "";
+
+    private workspace = "";
+
     public storageOptsEnv = "";
 
     constructor(executable: string) {
         this.executable = executable;
+    }
+
+    async enableContainerMode(containerImage: string, podmanPath: string, workspace: string): Promise<void> {
+        this.containerImage = containerImage;
+        this.podmanPath = podmanPath;
+        this.workspace = workspace;
+        core.info(`Pulling buildah container image "${containerImage}"...`);
+        await exec.exec(podmanPath, [ "pull", containerImage ]);
+        core.info(`Buildah will run inside container image "${containerImage}"`);
     }
 
     // Checks for storage driver if found "overlay",
@@ -273,8 +287,6 @@ export class BuildahCli implements Buildah {
         args: string[],
         execOptions: exec.ExecOptions & { group?: boolean } = {},
     ): Promise<CommandResult> {
-        // ghCore.info(`${EXECUTABLE} ${args.join(" ")}`)
-
         let stdout = "";
         let stderr = "";
 
@@ -290,8 +302,35 @@ export class BuildahCli implements Buildah {
             },
         };
 
+        // Determine the actual executable and args based on container mode
+        let actualExecutable: string;
+        let actualArgs: string[];
+
+        if (this.containerImage) {
+            // Run buildah inside a container with shared storage
+            actualExecutable = this.podmanPath;
+            actualArgs = [
+                "run", "--rm",
+                "--privileged",
+                "--network", "host",
+                "--security-opt", "label=disable",
+                "-v", "/var/lib/containers/storage:/var/lib/containers/storage",
+                "-v", `${this.workspace}:${this.workspace}`,
+                "-w", this.workspace,
+                this.containerImage,
+                "buildah",
+                ...args,
+            ];
+        }
+        else {
+            actualExecutable = this.executable;
+            actualArgs = args;
+        }
+
         if (execOptions.group) {
-            const groupName = [ this.executable, ...args ].join(" ");
+            const groupName = this.containerImage
+                ? [ "buildah", ...args ].join(" ") + ` (via ${this.containerImage})`
+                : [ this.executable, ...args ].join(" ");
             core.startGroup(groupName);
         }
 
@@ -303,19 +342,19 @@ export class BuildahCli implements Buildah {
             }
         });
 
-        if (this.storageOptsEnv) {
+        if (this.storageOptsEnv && !this.containerImage) {
             execEnv.STORAGE_OPTS = this.storageOptsEnv;
         }
 
         finalExecOptions.env = execEnv;
 
         try {
-            const exitCode = await exec.exec(this.executable, args, finalExecOptions);
+            const exitCode = await exec.exec(actualExecutable, actualArgs, finalExecOptions);
 
             if (execOptions.ignoreReturnCode !== true && exitCode !== 0) {
                 // Throwing the stderr as part of the Error makes the stderr
                 // show up in the action outline, which saves some clicking when debugging.
-                let error = `${path.basename(this.executable)} exited with code ${exitCode}`;
+                let error = `buildah exited with code ${exitCode}`;
                 if (stderr) {
                     error += `\n${stderr}`;
                 }
