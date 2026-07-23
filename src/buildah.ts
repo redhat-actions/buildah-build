@@ -16,18 +16,19 @@ export interface BuildahConfigSettings {
     workingdir?: string;
     arch?: string;
     labels?: string[];
+    annotations?: string[];
 }
 
 interface Buildah {
     buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
-        useOCI: boolean, labels: string[], layers: string,
+        useOCI: boolean, labels: string[], annotations: string[], layers: string,
         extraArgs: string[], tlsVerify: boolean, arch?: string, platform?: string,
     ): Promise<CommandResult>;
     from(baseImage: string, tlsVerify: boolean, extraArgs: string[]): Promise<CommandResult>;
     config(container: string, setting: BuildahConfigSettings): Promise<CommandResult>;
     copy(container: string, contentToCopy: string[], contentPath?: string): Promise<CommandResult | undefined>;
-    commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult>;
+    commit(container: string, newImageName: string, useOCI: boolean, squash: boolean): Promise<CommandResult>;
     tag(imageName: string, tags: string[]): Promise<void>;
     manifestRm(manifest: string): Promise<void>;
     manifestCreate(manifest: string): Promise<void>;
@@ -75,6 +76,7 @@ export class BuildahCli implements Buildah {
         buildArgs: string[],
         useOCI: boolean,
         labels: string[],
+        annotations: string[],
         layers: string,
         extraArgs: string[],
         tlsVerify: boolean,
@@ -98,6 +100,12 @@ export class BuildahCli implements Buildah {
             args.push("--label");
             args.push(label);
         });
+        if (useOCI) {
+            annotations.forEach((annotation) => {
+                args.push("--annotation");
+                args.push(annotation);
+            });
+        }
         buildArgs.forEach((buildArg) => {
             args.push("--build-arg");
             args.push(buildArg);
@@ -149,7 +157,7 @@ export class BuildahCli implements Buildah {
         core.debug("config");
         core.debug(container);
         const args: string[] = [ "config" ];
-        if (settings.entrypoint) {
+        if (settings.entrypoint && settings.entrypoint.length > 0) {
             args.push("--entrypoint");
             args.push(BuildahCli.convertArrayToStringArg(settings.entrypoint));
         }
@@ -181,14 +189,15 @@ export class BuildahCli implements Buildah {
         return this.execute(args);
     }
 
-    async commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult> {
+    async commit(container: string, newImageName: string, useOCI: boolean, squash: boolean): Promise<CommandResult> {
         core.debug("commit");
         core.debug(container);
         core.debug(newImageName);
-        const args: string[] = [
-            "commit", ...BuildahCli.getImageFormatOption(useOCI),
-            "--squash", container, newImageName,
-        ];
+        const args: string[] = [ "commit", ...BuildahCli.getImageFormatOption(useOCI) ];
+        if (squash) {
+            args.push("--squash");
+        }
+        args.push(container, newImageName);
         return this.execute(args);
     }
 

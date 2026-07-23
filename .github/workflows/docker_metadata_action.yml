@@ -70,6 +70,7 @@ jobs:
           layers: false
           tags: ${{ steps.docker-metadata.outputs.tags }}
           labels: ${{ steps.docker-metadata.outputs.labels }}
+          annotations: ${{ steps.docker-metadata.outputs.annotations }}
           containerfiles: |
             ./Containerfile
           extra-args: |
@@ -90,6 +91,8 @@ jobs:
           set -x
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.title"'
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.description"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Annotations."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Annotations."org.opencontainers.image.description"'
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.title"'
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.description"'
 
@@ -161,6 +164,7 @@ jobs:
         with:
           tags: ${{ steps.docker-metadata.outputs.tags }}
           labels: ${{ steps.docker-metadata.outputs.labels }}
+          annotations: ${{ steps.docker-metadata.outputs.annotations }}
           base-image: 'registry.access.redhat.com/openjdk/openjdk-11-rhel7'
           # To avoid hardcoding a particular version of the binary.
           content: |
@@ -188,5 +192,7 @@ jobs:
           set -x
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.title"'
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Labels."org.opencontainers.image.description"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Annotations."org.opencontainers.image.title"'
+          buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.OCIv1.config.Annotations."org.opencontainers.image.description"'
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.title"'
           buildah inspect ${{ steps.build_image.outputs.image-with-tag }} | jq '.Docker.config.Labels."org.opencontainers.image.description"'

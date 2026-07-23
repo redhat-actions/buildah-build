@@ -36,6 +36,8 @@ export async function run(): Promise<void> {
     const tagsList: string[] = tags.trim().split(/\s+/);
     const labels = core.getInput(Inputs.LABELS);
     const labelsList: string[] = labels ? splitByNewline(labels) : [];
+    const annotations = core.getInput(Inputs.ANNOTATIONS);
+    const annotationsList: string[] = annotations ? splitByNewline(annotations) : [];
 
     const normalizedTagsList: string[] = [];
     let isNormalized = false;
@@ -96,6 +98,7 @@ export async function run(): Promise<void> {
             archs,
             platforms,
             labelsList,
+            annotationsList,
             buildahExtraArgs
         ));
     }
@@ -157,6 +160,7 @@ async function doBuildUsingContainerFiles(
     archs: string[],
     platforms: string[],
     labels: string[],
+    annotations: string[],
     extraArgs: string[]
 ): Promise<string[]> {
     if (containerFiles.length === 1) {
@@ -190,6 +194,7 @@ async function doBuildUsingContainerFiles(
                 buildArgs,
                 useOCI,
                 labels,
+                annotations,
                 layers,
                 extraArgs,
                 tlsVerify,
@@ -210,6 +215,7 @@ async function doBuildUsingContainerFiles(
                 buildArgs,
                 useOCI,
                 labels,
+                annotations,
                 layers,
                 extraArgs,
                 tlsVerify,
@@ -228,6 +234,7 @@ async function doBuildUsingContainerFiles(
             buildArgs,
             useOCI,
             labels,
+            annotations,
             layers,
             extraArgs,
             tlsVerify,
@@ -244,6 +251,7 @@ async function doBuildUsingContainerFiles(
             buildArgs,
             useOCI,
             labels,
+            annotations,
             layers,
             extraArgs,
             tlsVerify
@@ -270,6 +278,7 @@ async function doBuildFromScratch(
     const port = core.getInput(Inputs.PORT);
     const workingDir = core.getInput(Inputs.WORKDIR);
     const envs = getInputList(Inputs.ENVS);
+    const squash = core.getInput(Inputs.SQUASH) === "true";
     const tlsVerify = core.getInput(Inputs.TLS_VERIFY) === "true";
 
     const container = await cli.from(baseImage, tlsVerify, extraArgs);
@@ -292,7 +301,7 @@ async function doBuildFromScratch(
             };
             await cli.config(containerId, newImageConfig);
             await cli.copy(containerId, content);
-            await cli.commit(containerId, `${newImage}${tagSuffix}`, useOCI);
+            await cli.commit(containerId, `${newImage}${tagSuffix}`, useOCI, squash);
             builtImage.push(`${newImage}${tagSuffix}`);
         }
     }
@@ -306,7 +315,7 @@ async function doBuildFromScratch(
         };
         await cli.config(containerId, newImageConfig);
         await cli.copy(containerId, content);
-        await cli.commit(containerId, newImage, useOCI);
+        await cli.commit(containerId, newImage, useOCI, squash);
         builtImage.push(newImage);
     }
 
