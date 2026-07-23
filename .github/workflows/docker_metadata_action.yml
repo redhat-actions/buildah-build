@@ -20,10 +20,6 @@ jobs:
   build-containerfile:
     name: Build image with Containerfile
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        install_latest: [ true, false ]
 
     env:
       IMAGE_NAME: "hello-world"
@@ -49,11 +45,6 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
-
-      - name: Install latest buildah
-        if: matrix.install_latest
-        run: |
-          bash .github/install_latest_buildah.sh
 
       - name: Create Dockerfile
         run: |
@@ -99,10 +90,6 @@ jobs:
   build-scratch:
     name: Build image without Containerfile
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        install_latest: [ true, false ]
 
     env:
       PROJECT_DIR: spring-petclinic
@@ -130,11 +117,6 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
-
-      - name: Install latest buildah
-        if: matrix.install_latest
-        run: |
-          bash .github/install_latest_buildah.sh
 
       # Checkout spring-petclinic github repository
       - name: Checkout spring-petclinic project
