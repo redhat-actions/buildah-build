@@ -32,6 +32,14 @@ export enum Inputs {
      */
     BUILD_ARGS = "build-args",
     /**
+     * Run buildah from this container image instead of using the host-installed buildah.
+     * Useful for getting a newer buildah version than what the runner provides.
+     * For example, "quay.io/buildah/stable" or "quay.io/buildah/upstream".
+     * Required: false
+     * Default: None.
+     */
+    BUILDAH_IMAGE = "buildah-image",
+    /**
      * List of Containerfile paths (eg: ./Containerfile)
      * Required: false
      * Default: None.

@@ -89,6 +89,12 @@ inputs:
       Require HTTPS and verify certificates when accessing the registry. Defaults to true.
     required: false
     default: 'true'
+  buildah-image:
+    description: |
+      Run buildah from this container image instead of using the host-installed buildah.
+      Useful for getting a newer buildah version than what the runner provides.
+      For example, "quay.io/buildah/stable" or "quay.io/buildah/upstream".
+    required: false
 outputs:
   image:
     description: 'Name of the image built'
