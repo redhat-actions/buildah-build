@@ -39,6 +39,8 @@ interface Buildah {
 export class BuildahCli implements Buildah {
     private readonly executable: string;
 
+    private readonly usePodman: boolean;
+
     private containerImage = "";
 
     private podmanPath = "";
@@ -47,8 +49,9 @@ export class BuildahCli implements Buildah {
 
     public storageOptsEnv = "";
 
-    constructor(executable: string) {
+    constructor(executable: string, usePodman = false) {
         this.executable = executable;
+        this.usePodman = usePodman;
     }
 
     async enableContainerMode(containerImage: string, podmanPath: string, workspace: string): Promise<void> {
@@ -98,7 +101,7 @@ export class BuildahCli implements Buildah {
         arch?: string,
         platform?: string
     ): Promise<CommandResult> {
-        const args: string[] = [ "bud" ];
+        const args: string[] = [ this.usePodman ? "build" : "bud" ];
         if (arch) {
             args.push("--arch");
             args.push(arch);
@@ -271,6 +274,10 @@ export class BuildahCli implements Buildah {
     }
 
     async inspectArch(image: string): Promise<CommandResult> {
+        if (this.usePodman) {
+            const args: string[] = [ "image", "inspect", "--format", "{{.Architecture}}", image ];
+            return this.execute(args);
+        }
         const args: string[] = [ "inspect", "--type", "image", "--format", "{{.OCIv1.architecture}}", image ];
         return this.execute(args);
     }
