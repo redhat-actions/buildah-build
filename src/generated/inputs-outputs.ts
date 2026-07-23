@@ -113,7 +113,7 @@ export enum Inputs {
      */
     PLATFORMS = "platforms",
     /**
-     * The port to expose when running containers based on image
+     * The port(s) to expose when running containers based on image. Separate multiple ports by newline.
      * Required: false
      * Default: None.
      */
