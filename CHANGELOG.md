@@ -1,5 +1,40 @@
 # buildah-build Changelog
 
+## v3.0.0
+
+### Breaking Changes
+- **Node.js 24 runtime**: The action now runs on the Node.js 24 runtime (`runs.using: node24`). GitHub Actions runners must support this runtime. [#154](https://github.com/redhat-actions/buildah-build/pull/154)
+- **Squash defaults to true**: The `squash` input now defaults to `true`, matching common usage. Set `squash: false` to preserve intermediate layers. [#161](https://github.com/redhat-actions/buildah-build/pull/161)
+
+### New Features
+- **Annotations input**: Add OCI annotations to images using the new `annotations` input. Separate multiple annotations by newline. Only supported by OCI images. [#161](https://github.com/redhat-actions/buildah-build/pull/161)
+- **Container mode (`buildah-image` input)**: Run buildah from a container image instead of the host-installed version. Useful for getting a newer buildah than what the runner provides. For example, `buildah-image: quay.io/buildah/stable`. [#168](https://github.com/redhat-actions/buildah-build/pull/168)
+- **Podman fallback**: When buildah is not installed on the runner, the action automatically falls back to using `podman build` for containerfile builds. Scratch builds still require buildah. [#169](https://github.com/redhat-actions/buildah-build/pull/169)
+- **Multiple ports**: The `port` input now accepts multiple ports separated by newline. [#165](https://github.com/redhat-actions/buildah-build/pull/165)
+- **Parallel multi-arch builds**: When building for multiple architectures, each architecture is now built in parallel for significantly faster builds. [#167](https://github.com/redhat-actions/buildah-build/pull/167)
+- **Architecture verification**: After each multi-arch build, the action verifies the output image matches the expected architecture, catching misconfigured emulation early. [#166](https://github.com/redhat-actions/buildah-build/pull/166)
+- **Image digest output**: The `digest` output now reliably returns the content digest of the built image. [#153](https://github.com/redhat-actions/buildah-build/pull/153), [#165](https://github.com/redhat-actions/buildah-build/pull/165)
+
+### Bug Fixes
+- Fix empty entrypoint being set when the input is not provided. [#161](https://github.com/redhat-actions/buildah-build/pull/161)
+- Fix containerfile path resolution to check both workspace and context directory. [#165](https://github.com/redhat-actions/buildah-build/pull/165)
+- Fix digest retrieval using `buildah images --format {{.Digest}}` instead of `buildah inspect` which returned the wrong type. [#165](https://github.com/redhat-actions/buildah-build/pull/165)
+
+### CI & Infrastructure
+- Modernize all CI workflows: upgrade to `actions/checkout@v7`, `actions/setup-node@v7`, `ubuntu-24.04` runners. [#156](https://github.com/redhat-actions/buildah-build/pull/156)
+- Add workflow permissions, concurrency groups, and path filters. [#156](https://github.com/redhat-actions/buildah-build/pull/156)
+- Remove broken `install_latest_buildah.sh` script and simplify CI matrices. [#164](https://github.com/redhat-actions/buildah-build/pull/164)
+- Remove defunct CRDA vulnerability scan workflow. [#170](https://github.com/redhat-actions/buildah-build/pull/170)
+- Enable Dependabot for npm and GitHub Actions dependencies. [#156](https://github.com/redhat-actions/buildah-build/pull/156)
+- Add CODEOWNERS, SECURITY.md. [#156](https://github.com/redhat-actions/buildah-build/pull/156)
+
+### Dependency Updates
+- Upgrade TypeScript to 6.x. [#163](https://github.com/redhat-actions/buildah-build/pull/163)
+- Upgrade ESLint to 10 with flat config. [#156](https://github.com/redhat-actions/buildah-build/pull/156)
+- Upgrade `@actions/core`, `@actions/exec`, `@actions/io` to latest versions. [#150](https://github.com/redhat-actions/buildah-build/pull/150), [#156](https://github.com/redhat-actions/buildah-build/pull/156)
+- Upgrade `@types/node` to v26. [#159](https://github.com/redhat-actions/buildah-build/pull/159)
+- Upgrade `redhat-actions/common` to v2. [#158](https://github.com/redhat-actions/buildah-build/pull/158)
+
 ## v2.13
 - Update action to run on Node20. https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/
 

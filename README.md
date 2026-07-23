@@ -11,7 +11,9 @@
 
 Buildah Build is a GitHub Action for building Docker and Kubernetes-compatible images quickly and easily.
 
-[Buildah](https://github.com/containers/buildah/tree/master/docs) only works on Linux. GitHub's [Ubuntu Environments](https://github.com/actions/virtual-environments#available-environments) (`ubuntu-18.04` and newer) come with buildah installed. If you are not using these environments, or if you want to use a different version, you must first [install buildah](https://github.com/containers/buildah/blob/master/install.md).
+[Buildah](https://github.com/containers/buildah/tree/master/docs) only works on Linux. GitHub's [Ubuntu Environments](https://github.com/actions/runner-images#available-images) (`ubuntu-22.04` and newer) come with buildah installed. If you are not using these environments, or if you want to use a different version, you must first [install buildah](https://github.com/containers/buildah/blob/master/install.md). Alternatively, use the [`buildah-image`](#common-inputs) input to run buildah from a container.
+
+If buildah is not found on the runner, the action will automatically fall back to using `podman build` for containerfile builds. Scratch builds (without a containerfile) always require buildah.
 
 After building your image, use [push-to-registry](https://github.com/redhat-actions/push-to-registry) to push the image and make it pullable.
 
@@ -19,24 +21,36 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 ## Action Inputs
 
+<a id="common-inputs"></a>
+
+### Common Inputs
+
+These inputs apply to both containerfile and scratch builds.
+
+| Input Name | Description | Default |
+| ---------- | ----------- | ------- |
+| image | Name to give to the output image. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | **Required** - unless all `tags` include image name
+| tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
+| labels | One or more labels to give the new image. Separate by newline. | None
+| annotations | OCI annotations to add to the image. Separate by newline. For example, `org.opencontainers.image.version=1.5.6`. Only supported by OCI images. | None
+| archs | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple architectures, separate them by a comma. | None (host architecture)
+| platforms | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple platforms, separate them by a comma. | None (host platform)
+| oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
+| tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification. | `true`
+| buildah-image | Run buildah from this container image instead of the host-installed buildah. Useful for getting a newer version. For example, `quay.io/buildah/stable`. | None
+
 <a id="dockerfile-build-inputs"></a>
 
 ### [Inputs for build from containerfile](https://github.com/containers/buildah/blob/main/docs/buildah-build.1.md)
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple architectures, seperate them by a comma | None (host architecture)
-| platforms | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple platforms, seperate them by a comma | None (host platform)
-| build-args | Build arguments to pass to the Docker build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
+| containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. Separate filenames by newline. | **Required**
 | context | Path to directory to use as the build context. | `.`
-| containerfiles\* | The list of Containerfile paths to perform a build using docker instructions. Separate filenames by newline. These are absolute paths, i.e they ignore the `context`. | **Required**
-| extra-args | Extra args to be passed to `buildah bud`. Separate arguments by newline. Do not use quotes. | None
-| image | Name to give to the output image. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | **Required** - unless all `tags` include image name
+| build-args | Build arguments to pass to the build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | layers | Set to true to cache intermediate layers during the build process. | None
-| oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
-| tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
-| labels | One or more labels to give the new image. Separate by newline. | None
-| tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification | `true`
+| squash | Squash all image layers into a single layer. | `true`
+| extra-args | Extra args to be passed to `buildah bud`. Separate arguments by newline. Do not use quotes. | None
 
 > \* The `containerfiles` input was previously `dockerfiles`. Refer to [this issue](https://github.com/redhat-actions/buildah-build/issues/57).
 
@@ -46,19 +60,13 @@ After building your image, use [push-to-registry](https://github.com/redhat-acti
 
 | Input Name | Description | Default |
 | ---------- | ----------- | ------- |
-| archs | Label the image with this architecture, instead of defaulting to the host architecture. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple architectures, seperate them by a comma | None (host architecture)
 | base-image | The base image to use for the container. | **Required**
-| content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories.| None
+| content | Paths to files or directories to copy inside the container to create the file image. This is a multiline input to allow you to copy multiple files/directories. | None
 | entrypoint | The entry point to set for the container. Separate arguments by newline. | None
 | envs | The environment variables to be set when running the container. Separate key=value pairs by newline. | None
-| image | Name to give to the output image. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | **Required** - unless all tags include image name
-| oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
-| port | The port to expose when running the container. | None
-| tags | One or more tags to give the new image. Separate by whitespace. Refer to the [Image and Tag Inputs](#image-tag-inputs) section. | `latest`
-| labels | One or more labels to give the new image. Separate by newline. | None
+| port | The port(s) to expose when running containers based on the image. Separate multiple ports by newline. | None
 | workdir | The working directory to use within the container. | None
 | extra-args | Extra args to be passed to `buildah from`. Separate arguments by newline. Do not use quotes. | None
-| tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification. This will be used with `buildah from` command. | `true`
 
 <a id="image-tag-inputs"></a>
 ### Image and Tags Inputs
@@ -125,13 +133,13 @@ on: [push]
 jobs:
   build:
     name: Build image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Buildah Action
-      uses: redhat-actions/buildah-build@v2
+      uses: redhat-actions/buildah-build@v3
       with:
         image: my-new-image
         tags: v1 ${{ github.sha }}
@@ -165,15 +173,15 @@ on: [push]
 jobs:
   build-image:
     name: Build image without Containerfile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - run: mvn package
 
     - name: Build Image
-      uses: redhat-actions/buildah-build@v2
+      uses: redhat-actions/buildah-build@v3
       with:
         base-image: docker.io/fabric8/java-alpine-openjdk11-jre
         image: my-new-image
@@ -210,14 +218,29 @@ There is a simple example [in this issue](https://github.com/redhat-actions/buil
 
 ### Creating a Multi-Arch Image List
 
-Input `archs` and `platforms` is provided to build the multi architecture images. If one of these input is provided with the multiple archs or platforms then a [manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) is built with the multiple architecture images. Name of the manifest is taken from the inputs `image` and `tags`.
-Incase multiple tags are provided then multiple manifest is created based on the provided tags.
+Use the `archs` and `platforms` inputs to build multi-architecture images. When multiple architectures or platforms are provided, a [manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) is created containing an image for each architecture. The manifest name is determined by the `image` and `tags` inputs.
 
-Use the `archs` and `platforms` inputs to build multi-architecture images. The name of the manifest is determined by the image and tags inputs.
+When building for multiple architectures, each architecture is built in parallel for faster builds. After each build, the action verifies the output image matches the expected architecture.
 
 If multiple tags are provided, multiple equivalent manifests will be created with the given tags.
 
 [`push-to-registry`](https://github.com/redhat-actions/push-to-registry) action can be used to push the generated image manifest.
+
+## Using a containerized buildah
+
+If you need a newer version of buildah than what the runner provides, use the `buildah-image` input to run buildah from a container image:
+
+```yaml
+- name: Build with latest buildah
+  uses: redhat-actions/buildah-build@v3
+  with:
+    image: my-image
+    tags: latest
+    containerfiles: ./Containerfile
+    buildah-image: quay.io/buildah/stable
+```
+
+The action will use `podman run --privileged` to execute buildah commands inside the specified container, sharing storage with the host so the built image is available for subsequent steps.
 
 ## Build with docker/metadata-action
 
