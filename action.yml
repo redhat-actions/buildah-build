@@ -41,7 +41,7 @@ inputs:
     description: 'Set to true to cache intermediate layers during build process'
     required: false
   port:
-    description: 'The port to expose when running containers based on image'
+    description: 'The port(s) to expose when running containers based on image. Separate multiple ports by newline.'
     required: false
   workdir:
     description: 'The working directory to use within the container'

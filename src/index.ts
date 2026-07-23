@@ -5,6 +5,7 @@
 
 import * as core from "@actions/core";
 import * as io from "@actions/io";
+import * as fs from "fs";
 import * as path from "path";
 import { Inputs, Outputs } from "./generated/inputs-outputs";
 import { BuildahCli, BuildahConfigSettings } from "./buildah";
@@ -172,7 +173,25 @@ async function doBuildUsingContainerFiles(
 
     const context = path.join(workspace, core.getInput(Inputs.CONTEXT));
     const buildArgs = getInputList(Inputs.BUILD_ARGS);
-    const containerFileAbsPaths = containerFiles.map((file) => path.join(workspace, file));
+    const containerFileAbsPaths = containerFiles.map((file) => {
+        // If the path is absolute, use it as-is
+        if (path.isAbsolute(file)) {
+            return file;
+        }
+        // Check if the file exists relative to the workspace (backward compat)
+        const workspacePath = path.join(workspace, file);
+        if (fs.existsSync(workspacePath)) {
+            return workspacePath;
+        }
+        // Otherwise, resolve relative to the context directory (Docker-compatible behavior)
+        const contextPath = path.join(context, file);
+        if (fs.existsSync(contextPath)) {
+            core.info(`Resolved containerfile "${file}" relative to context directory "${context}"`);
+            return contextPath;
+        }
+        // Fall back to workspace-relative path and let buildah report the error
+        return workspacePath;
+    });
     const layers = core.getInput(Inputs.LAYERS);
     const tlsVerify = core.getInput(Inputs.TLS_VERIFY) === "true";
 
@@ -275,7 +294,7 @@ async function doBuildFromScratch(
     const baseImage = core.getInput(Inputs.BASE_IMAGE, { required: true });
     const content = getInputList(Inputs.CONTENT);
     const entrypoint = getInputList(Inputs.ENTRYPOINT);
-    const port = core.getInput(Inputs.PORT);
+    const ports = getInputList(Inputs.PORT);
     const workingDir = core.getInput(Inputs.WORKDIR);
     const envs = getInputList(Inputs.ENVS);
     const squash = core.getInput(Inputs.SQUASH) === "true";
@@ -293,7 +312,7 @@ async function doBuildFromScratch(
             }
             const newImageConfig: BuildahConfigSettings = {
                 entrypoint,
-                port,
+                ports,
                 workingdir: workingDir,
                 envs,
                 arch,
@@ -308,7 +327,7 @@ async function doBuildFromScratch(
     else {
         const newImageConfig: BuildahConfigSettings = {
             entrypoint,
-            port,
+            ports,
             workingdir: workingDir,
             envs,
             labels,

@@ -12,7 +12,7 @@ import { isStorageDriverOverlay, findFuseOverlayfsPath, getFullImageName } from 
 export interface BuildahConfigSettings {
     entrypoint?: string[];
     envs?: string[];
-    port?: string;
+    ports?: string[];
     workingdir?: string;
     arch?: string;
     labels?: string[];
@@ -161,9 +161,11 @@ export class BuildahCli implements Buildah {
             args.push("--entrypoint");
             args.push(BuildahCli.convertArrayToStringArg(settings.entrypoint));
         }
-        if (settings.port) {
-            args.push("--port");
-            args.push(settings.port);
+        if (settings.ports) {
+            settings.ports.forEach((port) => {
+                args.push("--port");
+                args.push(port);
+            });
         }
         if (settings.envs) {
             settings.envs.forEach((env) => {
@@ -249,7 +251,7 @@ export class BuildahCli implements Buildah {
     }
 
     async inspect(image: string): Promise<CommandResult> {
-        const args: string[] = [ "inspect", "--format", "{{.FromImageDigest}}", image ];
+        const args: string[] = [ "images", "--format", "{{.Digest}}", image ];
         return this.execute(args);
     }
 
