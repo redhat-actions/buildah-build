@@ -1,10 +1,27 @@
 {
-    "extends": "@redhat-actions/tsconfig",
     "compilerOptions": {
-      "rootDir": "src/",
-      "outDir": "out/"
+        "rootDir": "src/",
+        "outDir": "out/",
+
+        "target": "es2024",
+        "lib": ["es2024"],
+        "module": "commonjs",
+        "moduleResolution": "node",
+
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "sourceMap": true,
+
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+
+        "types": ["node"]
     },
     "include": [
-      "src/"
-    ],
+        "src/"
+    ]
 }

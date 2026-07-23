@@ -9,12 +9,19 @@ on:
   schedule:
     - cron: '0 0 * * *'  # every day at midnight
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   markdown-link-check:
     name: Check links in markdown
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           use-verbose-mode: true

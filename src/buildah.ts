@@ -26,10 +26,13 @@ interface Buildah {
     ): Promise<CommandResult>;
     from(baseImage: string, tlsVerify: boolean, extraArgs: string[]): Promise<CommandResult>;
     config(container: string, setting: BuildahConfigSettings): Promise<CommandResult>;
-    copy(container: string, contentToCopy: string[]): Promise<CommandResult | undefined>;
+    copy(container: string, contentToCopy: string[], contentPath?: string): Promise<CommandResult | undefined>;
     commit(container: string, newImageName: string, useOCI: boolean): Promise<CommandResult>;
+    tag(imageName: string, tags: string[]): Promise<void>;
+    manifestRm(manifest: string): Promise<void>;
     manifestCreate(manifest: string): Promise<void>;
-    manifestAdd(manifest: string, imageName: string, tags: string[]): Promise<void>;
+    manifestAdd(manifest: string, image: string): Promise<void>;
+    inspect(image: string): Promise<CommandResult>;
 }
 
 export class BuildahCli implements Buildah {
