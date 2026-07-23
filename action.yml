@@ -15,6 +15,9 @@ inputs:
   labels:
     description: 'The labels of the image to build. Seperate by newline. For example, "io.containers.capabilities=sys_admin,mknod".'
     required: false
+  annotations:
+    description: 'The annotations of the image to build. Seperate by newline. For example, "org.opencontainers.image.version=1.5.6". Only supported by OCI images.'
+    required: false
   base-image:
     description: 'The base image to use to create a new container image'
     required: false
@@ -48,6 +51,10 @@ inputs:
     required: false
   build-args:
     description: 'List of --build-args to pass to buildah'
+    required: false
+  squash:
+    description: 'Set to true to squash all image layers into a single layer'
+    default: 'true'
     required: false
   oci:
     description: 'Set to true to build using the OCI image format instead of the Docker image format'
