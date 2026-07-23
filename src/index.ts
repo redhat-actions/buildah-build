@@ -19,23 +19,38 @@ export async function run(): Promise<void> {
         throw new Error("buildah, and therefore this action, only works on Linux. Please use a Linux runner.");
     }
 
-    // get buildah cli
-    const buildahPath = await io.which("buildah", true);
-    const cli: BuildahCli = new BuildahCli(buildahPath);
+    // Try to find buildah, fall back to podman for containerfile builds
+    let buildahPath: string;
+    let usePodman = false;
+    try {
+        buildahPath = await io.which("buildah", true);
+    }
+    catch (_err) {
+        core.info("buildah not found, looking for podman as fallback...");
+        buildahPath = await io.which("podman", true);
+        usePodman = true;
+        core.info("Using podman as a fallback for buildah. Scratch builds are not supported in this mode.");
+    }
+    const cli: BuildahCli = new BuildahCli(buildahPath, usePodman);
 
     // Check if user wants to run buildah from a container image
     const buildahImage = core.getInput(Inputs.BUILDAH_IMAGE);
     if (buildahImage) {
-        const podmanPath = await io.which("podman", true);
-        const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-        await cli.enableContainerMode(buildahImage, podmanPath, workspace);
+        if (usePodman) {
+            core.info("buildah-image input is ignored when using podman fallback");
+        }
+        else {
+            const podmanPath = await io.which("podman", true);
+            const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+            await cli.enableContainerMode(buildahImage, podmanPath, workspace);
+        }
     }
 
-    // print buildah version
+    // print version
     await cli.execute([ "version" ], { group: true });
 
     // Check if fuse-overlayfs exists and find the storage driver
-    if (!buildahImage) {
+    if (!usePodman && !buildahImage) {
         await cli.setStorageOptsEnv();
     }
 
@@ -114,6 +129,9 @@ export async function run(): Promise<void> {
         ));
     }
     else {
+        if (usePodman) {
+            throw new Error("Scratch builds (without containerfiles) require buildah and are not supported when using the podman fallback.");
+        }
         if (platforms.length > 0) {
             throw new Error("The --platform option is not supported for builds without containerfiles.");
         }
