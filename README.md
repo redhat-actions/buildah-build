@@ -242,6 +242,15 @@ If you need a newer version of buildah than what the runner provides, use the `b
 
 The action will use `podman run --privileged` to execute buildah commands inside the specified container, sharing storage with the host so the built image is available for subsequent steps.
 
+### Available images
+
+| Image | Description |
+| ----- | ----------- |
+| `quay.io/buildah/stable` | Latest stable release, rebuilt daily |
+| `quay.io/buildah/upstream` | Built from buildah `main` branch |
+| `quay.io/buildah/testing` | Latest from Fedora updates-testing |
+| `quay.io/containers/buildah:<version>` | Pinned to a specific version |
+
 ## Build with docker/metadata-action
 
 Refer to the [docker/metadata-action example](./.github/workflows/docker_metadata_action.yml).
