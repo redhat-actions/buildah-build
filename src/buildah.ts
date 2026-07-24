@@ -47,6 +47,8 @@ export class BuildahCli implements Buildah {
 
     private workspace = "";
 
+    private storageRoot = "";
+
     public storageOptsEnv = "";
 
     constructor(executable: string, usePodman = false) {
@@ -58,9 +60,48 @@ export class BuildahCli implements Buildah {
         this.containerImage = containerImage;
         this.podmanPath = podmanPath;
         this.workspace = workspace;
+
+        this.storageRoot = await this.getGraphRoot(podmanPath);
+
         core.info(`Pulling buildah container image "${containerImage}"...`);
         await exec.exec(podmanPath, [ "pull", containerImage ]);
         core.info(`Buildah will run inside container image "${containerImage}"`);
+    }
+
+    private static readonly DEFAULT_STORAGE_ROOT = "/var/lib/containers/storage";
+
+    private async getGraphRoot(podmanPath: string): Promise<string> {
+        let graphRoot = "";
+        try {
+            const exitCode = await exec.exec(
+                podmanPath,
+                [ "info", "--format", "{{.Store.GraphRoot}}" ],
+                {
+                    silent: true,
+                    listeners: {
+                        stdline: (line): void => {
+                            if (line.trim()) {
+                                graphRoot = line.trim();
+                            }
+                        },
+                    },
+                },
+            );
+            if (exitCode !== 0 || !graphRoot) {
+                throw new Error(`podman info exited with code ${exitCode}`);
+            }
+        }
+        catch (_err) {
+            core.warning(
+                `Could not detect container storage root via "podman info". `
+                + `Falling back to "${BuildahCli.DEFAULT_STORAGE_ROOT}". `
+                + `If you encounter permission errors, ensure this path is accessible `
+                + `or run the action as root.`
+            );
+            graphRoot = BuildahCli.DEFAULT_STORAGE_ROOT;
+        }
+        core.info(`Using container storage root: ${graphRoot}`);
+        return graphRoot;
     }
 
     // Checks for storage driver if found "overlay",
@@ -321,7 +362,7 @@ export class BuildahCli implements Buildah {
                 "--privileged",
                 "--network", "host",
                 "--security-opt", "label=disable",
-                "-v", "/var/lib/containers/storage:/var/lib/containers/storage",
+                "-v", `${this.storageRoot}:${this.storageRoot}`,
                 "-v", `${this.workspace}:${this.workspace}`,
                 "-w", this.workspace,
                 this.containerImage,
