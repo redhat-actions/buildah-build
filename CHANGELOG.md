@@ -1,5 +1,13 @@
 # buildah-build Changelog
 
+## v3.0.1
+
+### Bug Fixes
+- **Fix container mode storage permission error**: The `buildah-image` feature hardcoded the rootful storage path `/var/lib/containers/storage`, which fails with `permission denied` on rootless runners. The action now detects the host's actual storage root via `podman info` at runtime, with a fallback to the previous path. [#175](https://github.com/redhat-actions/buildah-build/pull/175)
+
+### CI & Infrastructure
+- Add unit test suite using vitest and a test job in CI. [#175](https://github.com/redhat-actions/buildah-build/pull/175)
+
 ## v3.0.0
 
 ### Breaking Changes
