@@ -1,13 +1,12 @@
-# This workflow will perform a test whenever there
-# is some change in code done to ensure that the changes
-# are not buggy and we are getting the desired output.
+# Tests for containerfile-based builds: native buildah, containerized
+# buildah (buildah-image), and case normalization.
 name: Build from containerfile
 on:
   push:
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'  # every day at midnight
+    - cron: '0 0 * * *'
 
 permissions:
   contents: read
@@ -16,29 +15,25 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  IMAGE_NAME: "hello-world"
-
 jobs:
-  build:
-    name: Build image using Buildah
+  build-native:
+    name: Build with native buildah
     runs-on: ubuntu-24.04
+    env:
+      IMAGE_NAME: "hello-world"
     steps:
-
-      # Checkout buildah action github repository
       - name: Checkout Buildah action
         uses: actions/checkout@v7
         with:
           path: "buildah-build"
 
-      - name: Create Dockerfile
+      - name: Create Containerfile
         run: |
           cat > Containerfile<<EOF
           FROM busybox
           RUN echo "hello world"
           EOF
 
-      # Build image using Buildah action
       - name: Build Image
         id: build_image
         uses: ./buildah-build/
@@ -58,6 +53,85 @@ jobs:
           echo "Tagged Image: ${{ steps.build_image.outputs.image-with-tag }}"
           echo "Image Digest: ${{ steps.build_image.outputs.digest }}"
 
-      # Check if image is build
       - name: Check images created
         run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+  build-containerized:
+    name: Build with containerized buildah
+    runs-on: ubuntu-24.04
+    env:
+      IMAGE_NAME: "hello-world"
+    steps:
+      - name: Checkout Buildah action
+        uses: actions/checkout@v7
+        with:
+          path: "buildah-build"
+
+      - name: Create Containerfile
+        run: |
+          cat > Containerfile<<EOF
+          FROM busybox
+          RUN echo "hello world"
+          EOF
+
+      - name: Build Image
+        id: build_image
+        uses: ./buildah-build/
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          layers: false
+          tags: 'latest ${{ github.sha }}'
+          containerfiles: |
+            ./Containerfile
+          buildah-image: quay.io/buildah/stable
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image.outputs.image }}"
+          echo "Tags: ${{ steps.build_image.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image.outputs.image-with-tag }}"
+          echo "Image Digest: ${{ steps.build_image.outputs.digest }}"
+
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+  build-case-normalization:
+    name: Build with mixed-case names
+    runs-on: ubuntu-24.04
+    env:
+      IMAGE_NAME: ImageCaseTest
+      IMAGE_TAGS: v1 TagCaseTest
+    steps:
+      - name: Checkout Buildah action
+        uses: actions/checkout@v7
+        with:
+          path: "buildah-build"
+
+      - name: Create Containerfile
+        run: |
+          cat > Containerfile<<EOF
+          FROM busybox
+          RUN echo "hello world"
+          EOF
+
+      - name: Build Image
+        id: build_image
+        uses: ./buildah-build/
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          layers: false
+          tags: ${{ env.IMAGE_TAGS }}
+          containerfiles: |
+            ./Containerfile
+          extra-args: |
+            --pull
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image.outputs.image }}"
+          echo "Tags: ${{ steps.build_image.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image.outputs.image-with-tag }}"
+          echo "Image Digest: ${{ steps.build_image.outputs.digest }}"
+
+      - name: Check images created
+        run: buildah images
