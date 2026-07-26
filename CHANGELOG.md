@@ -1,5 +1,14 @@
 # buildah-build Changelog
 
+## v3.0.2
+
+### Bug Fixes
+- **Fix container mode "image not known" error**: Each containerized buildah command ran in a new disposable container with its own storage. Images built by `buildah bud` were invisible to subsequent `buildah tag` and `buildah images` commands. All containerized buildah invocations now pass `--root <storageRoot>` to share the bind-mounted host storage. [#177](https://github.com/redhat-actions/buildah-build/pull/177)
+
+### CI & Infrastructure
+- Add integration test for `buildah-image` container mode with multiple tags. [#177](https://github.com/redhat-actions/buildah-build/pull/177)
+- Consolidate three containerfile build workflows into one (native, containerized, case normalization). [#177](https://github.com/redhat-actions/buildah-build/pull/177)
+
 ## v3.0.1
 
 ### Bug Fixes
