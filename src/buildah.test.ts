@@ -33,41 +33,52 @@ function findExecCall(predicate: (call: ExecCall) => boolean): ExecCall | undefi
     return execCallLog.find(predicate);
 }
 
+function findAllExecCalls(predicate: (call: ExecCall) => boolean): ExecCall[] {
+    return execCallLog.filter(predicate);
+}
+
+const isPodmanRun = (c: ExecCall): boolean => c.executable === PODMAN && c.args[0] === "run";
+
+const PODMAN = "/usr/bin/podman";
+const WORKSPACE = "/home/runner/work/my-repo/my-repo";
+const IMAGE = "quay.io/buildah/stable";
+const ROOTLESS_STORAGE = "/home/runner/.local/share/containers/storage";
+const DEFAULT_STORAGE = "/var/lib/containers/storage";
+
 beforeEach(() => {
     vi.clearAllMocks();
     execCallLog = [];
     execMockImpl = () => Promise.resolve(0);
 });
 
-describe("BuildahCli container mode", () => {
-    const PODMAN = "/usr/bin/podman";
-    const WORKSPACE = "/home/runner/work/my-repo/my-repo";
-    const IMAGE = "quay.io/buildah/stable";
-
-    function makePodmanInfoMock(graphRoot: string): ExecImpl {
-        return (_executable, args, options) => {
-            if (args[0] === "info") {
-                const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
-                listeners?.stdline?.(graphRoot);
-                return Promise.resolve(0);
-            }
+function makePodmanInfoMock(graphRoot: string): ExecImpl {
+    return (_executable, args, options) => {
+        if (args[0] === "info") {
+            const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
+            listeners?.stdline?.(graphRoot);
             return Promise.resolve(0);
-        };
-    }
+        }
+        return Promise.resolve(0);
+    };
+}
 
+async function setupContainerMode(graphRoot: string): Promise<BuildahCli> {
+    setExecMock(makePodmanInfoMock(graphRoot));
+    const cli = new BuildahCli("/usr/bin/buildah");
+    await cli.enableContainerMode(IMAGE, PODMAN, WORKSPACE);
+    return cli;
+}
+
+describe("BuildahCli container mode", () => {
     it("uses detected graphRoot in volume mount", async () => {
-        const graphRoot = "/home/runner/.local/share/containers/storage";
-        setExecMock(makePodmanInfoMock(graphRoot));
-
-        const cli = new BuildahCli("/usr/bin/buildah");
-        await cli.enableContainerMode(IMAGE, PODMAN, WORKSPACE);
+        const cli = await setupContainerMode(ROOTLESS_STORAGE);
         await cli.execute(["version"]);
 
-        const runCall = findExecCall((c) => c.executable === PODMAN && c.args[0] === "run");
+        const runCall = findExecCall(isPodmanRun);
         expect(runCall).toBeDefined();
-        expect(runCall!.args).toContain(`${graphRoot}:${graphRoot}`);
+        expect(runCall!.args).toContain(`${ROOTLESS_STORAGE}:${ROOTLESS_STORAGE}`);
         expect(runCall!.args).not.toContain(
-            "/var/lib/containers/storage:/var/lib/containers/storage",
+            `${DEFAULT_STORAGE}:${DEFAULT_STORAGE}`,
         );
     });
 
@@ -87,10 +98,10 @@ describe("BuildahCli container mode", () => {
             expect.stringContaining("Could not detect container storage root"),
         );
 
-        const runCall = findExecCall((c) => c.executable === PODMAN && c.args[0] === "run");
+        const runCall = findExecCall(isPodmanRun);
         expect(runCall).toBeDefined();
         expect(runCall!.args).toContain(
-            "/var/lib/containers/storage:/var/lib/containers/storage",
+            `${DEFAULT_STORAGE}:${DEFAULT_STORAGE}`,
         );
     });
 
@@ -111,13 +122,10 @@ describe("BuildahCli container mode", () => {
     });
 
     it("passes correct podman run flags", async () => {
-        setExecMock(makePodmanInfoMock("/var/lib/containers/storage"));
-
-        const cli = new BuildahCli("/usr/bin/buildah");
-        await cli.enableContainerMode(IMAGE, PODMAN, WORKSPACE);
+        const cli = await setupContainerMode(DEFAULT_STORAGE);
         await cli.execute(["version"]);
 
-        const runCall = findExecCall((c) => c.executable === PODMAN && c.args[0] === "run");
+        const runCall = findExecCall(isPodmanRun);
         expect(runCall).toBeDefined();
         const args = runCall!.args;
 
@@ -132,17 +140,67 @@ describe("BuildahCli container mode", () => {
     });
 
     it("does not set STORAGE_OPTS in container mode", async () => {
-        setExecMock(makePodmanInfoMock("/var/lib/containers/storage"));
-
-        const cli = new BuildahCli("/usr/bin/buildah");
+        const cli = await setupContainerMode(DEFAULT_STORAGE);
         cli.storageOptsEnv = "overlay.mount_program=/usr/bin/fuse-overlayfs";
-        await cli.enableContainerMode(IMAGE, PODMAN, WORKSPACE);
         await cli.execute(["version"]);
 
-        const runCall = findExecCall((c) => c.executable === PODMAN && c.args[0] === "run");
+        const runCall = findExecCall(isPodmanRun);
         expect(runCall).toBeDefined();
         const env = (runCall!.options as { env?: Record<string, string> })?.env;
         expect(env?.STORAGE_OPTS).toBeUndefined();
+    });
+
+    it("passes --root immediately after buildah and before the subcommand", async () => {
+        const cli = await setupContainerMode(ROOTLESS_STORAGE);
+        await cli.execute(["bud", "-t", "myimage", "."]);
+
+        const runCall = findExecCall(isPodmanRun);
+        expect(runCall).toBeDefined();
+        const args = runCall!.args;
+
+        const buildahIdx = args.indexOf("buildah");
+        expect(args[buildahIdx + 1]).toBe("--root");
+        expect(args[buildahIdx + 2]).toBe(ROOTLESS_STORAGE);
+        expect(args[buildahIdx + 3]).toBe("bud");
+    });
+
+    it("shares storage across build then tag (multi-step flow)", async () => {
+        const cli = await setupContainerMode(ROOTLESS_STORAGE);
+
+        await cli.buildUsingDocker(
+            "ghcr.io/foo/bar:next", WORKSPACE, ["Containerfile"],
+            [], false, [], [], "", [], true,
+        );
+        await cli.tag("ghcr.io/foo/bar", ["next", "abc123"]);
+
+        const runCalls = findAllExecCalls(isPodmanRun);
+        expect(runCalls.length).toBeGreaterThanOrEqual(2);
+
+        for (const call of runCalls) {
+            const buildahIdx = call.args.indexOf("buildah");
+            expect(buildahIdx).toBeGreaterThan(-1);
+            expect(call.args[buildahIdx + 1]).toBe("--root");
+            expect(call.args[buildahIdx + 2]).toBe(ROOTLESS_STORAGE);
+        }
+    });
+
+    it("shares storage across build then inspect (multi-step flow)", async () => {
+        const cli = await setupContainerMode(ROOTLESS_STORAGE);
+
+        await cli.buildUsingDocker(
+            "ghcr.io/foo/bar:next", WORKSPACE, ["Containerfile"],
+            [], false, [], [], "", [], true,
+        );
+        await cli.inspect("ghcr.io/foo/bar:next");
+
+        const runCalls = findAllExecCalls(isPodmanRun);
+        expect(runCalls.length).toBeGreaterThanOrEqual(2);
+
+        for (const call of runCalls) {
+            const buildahIdx = call.args.indexOf("buildah");
+            expect(call.args[buildahIdx + 1]).toBe("--root");
+            expect(call.args[buildahIdx + 2]).toBe(ROOTLESS_STORAGE);
+        }
     });
 });
 
@@ -157,10 +215,19 @@ describe("BuildahCli non-container mode", () => {
         expect(call).toBeDefined();
         expect(call!.args).toEqual(["version"]);
 
-        const podmanRun = findExecCall(
-            (c) => c.args[0] === "run" && c.args.includes("--privileged"),
-        );
+        const podmanRun = findExecCall(isPodmanRun);
         expect(podmanRun).toBeUndefined();
+    });
+
+    it("does not add --root flag", async () => {
+        setExecMock(() => Promise.resolve(0));
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        await cli.execute(["bud", "-t", "myimage", "."]);
+
+        const call = findExecCall((c) => c.executable === "/usr/bin/buildah");
+        expect(call).toBeDefined();
+        expect(call!.args).not.toContain("--root");
     });
 
     it("sets STORAGE_OPTS when configured", async () => {

@@ -367,6 +367,7 @@ export class BuildahCli implements Buildah {
                 "-w", this.workspace,
                 this.containerImage,
                 "buildah",
+                "--root", this.storageRoot,
                 ...args,
             ];
         }
