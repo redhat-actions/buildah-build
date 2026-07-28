@@ -14,6 +14,8 @@ import {
 } from "./utils";
 
 export async function run(): Promise<void> {
+    core.warning("buildah-build@v2 is deprecated and will no longer receive updates. Please upgrade to v3: https://github.com/redhat-actions/buildah-build");
+
     if (process.env.RUNNER_OS !== "Linux") {
         throw new Error("buildah, and therefore this action, only works on Linux. Please use a Linux runner.");
     }
