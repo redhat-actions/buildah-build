@@ -32,7 +32,7 @@
     "@eslint/js": "^10.0.1",
     "@redhat-actions/action-io-generator": "^1.5.0",
     "@types/ini": "^4.1.1",
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.2.0",
     "esbuild": "^0.28.1",
     "eslint": "^10.8.0",
     "typescript": "^6.0.3",
