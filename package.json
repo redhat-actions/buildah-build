@@ -33,7 +33,7 @@
     "@redhat-actions/action-io-generator": "^1.5.0",
     "@types/ini": "^4.1.1",
     "@types/node": "^26.2.0",
-    "esbuild": "^0.28.1",
+    "esbuild": "^0.28.2",
     "eslint": "^10.8.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.67.0",
