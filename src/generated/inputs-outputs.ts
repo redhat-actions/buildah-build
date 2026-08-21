@@ -136,6 +136,13 @@ export enum Inputs {
      */
     PORT = "port",
     /**
+     * Set to true to run builds sequentially instead of in parallel when multiple architectures or platforms are provided.
+     * Defaults to false for backward compatibility.
+     * Required: false
+     * Default: "false"
+     */
+    SEQUENTIAL = "sequential",
+    /**
      * Set to true to squash all image layers into a single layer
      * Required: false
      * Default: "true"

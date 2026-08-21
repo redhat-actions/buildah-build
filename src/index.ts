@@ -114,6 +114,7 @@ export async function run(): Promise<void> {
         throw new Error("The --platform option may not be used in combination with the --arch option.");
     }
 
+    const sequential = core.getInput(Inputs.SEQUENTIAL) === "true";
     const builtImage = [];
     if (containerFiles.length !== 0) {
         builtImage.push(...await doBuildUsingContainerFiles(
@@ -126,7 +127,8 @@ export async function run(): Promise<void> {
             platforms,
             labelsList,
             annotationsList,
-            buildahExtraArgs
+            buildahExtraArgs,
+            sequential
         ));
     }
     else {
@@ -217,7 +219,8 @@ async function doBuildUsingContainerFiles(
     platforms: string[],
     labels: string[],
     annotations: string[],
-    extraArgs: string[]
+    extraArgs: string[],
+    sequential: boolean = false
 ): Promise<string[]> {
     if (containerFiles.length === 1) {
         core.info(`Performing build from Containerfile`);
@@ -254,58 +257,67 @@ async function doBuildUsingContainerFiles(
     // since multi arch image can not have same tag
     // therefore, appending arch/platform in the tag
     if (archs.length > 0 || platforms.length > 0) {
-        // Build all architectures in parallel for faster multi-arch builds
-        const archBuilds = archs.map(async (arch) => {
-            let tagSuffix = "";
-            if (archs.length > 1) {
-                tagSuffix = `-${removeIllegalCharacters(arch)}`;
-            }
-            const imageTag = `${newImage}${tagSuffix}`;
-            await cli.buildUsingDocker(
-                imageTag,
-                context,
-                containerFileAbsPaths,
-                buildArgs,
-                useOCI,
-                labels,
-                annotations,
-                layers,
-                extraArgs,
-                tlsVerify,
-                arch
-            );
-            await verifyImageArch(cli, imageTag, arch);
-            return imageTag;
-        });
+        // Build all architectures and platforms
+        const allBuilds = [
+            ...archs.map((arch) => async () => {
+                let tagSuffix = "";
+                if (archs.length > 1) {
+                    tagSuffix = `-${removeIllegalCharacters(arch)}`;
+                }
+                const imageTag = `${newImage}${tagSuffix}`;
+                await cli.buildUsingDocker(
+                    imageTag,
+                    context,
+                    containerFileAbsPaths,
+                    buildArgs,
+                    useOCI,
+                    labels,
+                    annotations,
+                    layers,
+                    extraArgs,
+                    tlsVerify,
+                    arch
+                );
+                await verifyImageArch(cli, imageTag, arch);
+                return imageTag;
+            }),
+            ...platforms.map((platform) => async () => {
+                let tagSuffix = "";
+                if (platforms.length > 1) {
+                    tagSuffix = `-${removeIllegalCharacters(platform)}`;
+                }
+                const imageTag = `${newImage}${tagSuffix}`;
+                // Platform format is os/arch (e.g., linux/arm64)
+                const expectedArch = platform.includes("/") ? platform.split("/")[1] : platform;
+                await cli.buildUsingDocker(
+                    imageTag,
+                    context,
+                    containerFileAbsPaths,
+                    buildArgs,
+                    useOCI,
+                    labels,
+                    annotations,
+                    layers,
+                    extraArgs,
+                    tlsVerify,
+                    undefined,
+                    platform
+                );
+                await verifyImageArch(cli, imageTag, expectedArch);
+                return imageTag;
+            })
+        ];
 
-        const platformBuilds = platforms.map(async (platform) => {
-            let tagSuffix = "";
-            if (platforms.length > 1) {
-                tagSuffix = `-${removeIllegalCharacters(platform)}`;
+        if (sequential) {
+            // Run builds sequentially
+            for (const buildFn of allBuilds) {
+                builtImage.push(await buildFn());
             }
-            const imageTag = `${newImage}${tagSuffix}`;
-            // Platform format is os/arch (e.g., linux/arm64)
-            const expectedArch = platform.includes("/") ? platform.split("/")[1] : platform;
-            await cli.buildUsingDocker(
-                imageTag,
-                context,
-                containerFileAbsPaths,
-                buildArgs,
-                useOCI,
-                labels,
-                annotations,
-                layers,
-                extraArgs,
-                tlsVerify,
-                undefined,
-                platform
-            );
-            await verifyImageArch(cli, imageTag, expectedArch);
-            return imageTag;
-        });
-
-        const results = await Promise.all([ ...archBuilds, ...platformBuilds ]);
-        builtImage.push(...results);
+        }
+        else {
+            const results = await Promise.all(allBuilds.map(fn => fn()));
+            builtImage.push(...results);
+        }
     }
 
     else if (archs.length === 1 || platforms.length === 1) {
