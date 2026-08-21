@@ -38,6 +38,7 @@ These inputs apply to both containerfile and scratch builds.
 | oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
 | tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification. | `true`
 | buildah-image | Run buildah from this container image instead of the host-installed buildah. Useful for getting a newer version. For example, `quay.io/buildah/stable`. | None
+| sequential | Run builds sequentially instead of in parallel when multiple architectures or platforms are provided. | `false` |
 
 <a id="dockerfile-build-inputs"></a>
 
@@ -220,7 +221,7 @@ There is a simple example [in this issue](https://github.com/redhat-actions/buil
 
 Use the `archs` and `platforms` inputs to build multi-architecture images. When multiple architectures or platforms are provided, a [manifest](https://github.com/containers/buildah/blob/main/docs/buildah-manifest.1.md) is created containing an image for each architecture. The manifest name is determined by the `image` and `tags` inputs.
 
-When building for multiple architectures, each architecture is built in parallel for faster builds. After each build, the action verifies the output image matches the expected architecture.
+When building for multiple architectures, each architecture is built in parallel for faster builds by default. Set `sequential: true` to run builds one at a time instead. After each build, the action verifies the output image matches the expected architecture.
 
 If multiple tags are provided, multiple equivalent manifests will be created with the given tags.
 
