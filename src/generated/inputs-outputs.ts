@@ -150,6 +150,12 @@ export enum Inputs {
      * Default: None.
      */
     WORKDIR = "workdir",
+    /**
+     * Set to true to run builds sequentially instead of in parallel when multiple architectures or platforms are provided.
+     * Required: false
+     * Default: "false"
+     */
+    SEQUENTIAL = "sequential",
 }
 
 export enum Outputs {

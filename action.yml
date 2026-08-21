@@ -95,6 +95,12 @@ inputs:
       Useful for getting a newer buildah version than what the runner provides.
       For example, "quay.io/buildah/stable" or "quay.io/buildah/upstream".
     required: false
+  sequential:
+    description: |
+      Set to true to run builds sequentially instead of in parallel when multiple architectures or platforms are provided.
+      Defaults to false for backward compatibility.
+    required: false
+    default: 'false'
 outputs:
   image:
     description: 'Name of the image built'
