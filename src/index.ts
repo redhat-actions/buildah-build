@@ -51,7 +51,8 @@ export async function run(): Promise<void> {
 
     // Check if fuse-overlayfs exists and find the storage driver
     if (!usePodman && !buildahImage) {
-        await cli.setStorageOptsEnv();
+        const disableFuseOverlayfs = core.getInput(Inputs.DISABLE_FUSE_OVERLAYFS) === "true";
+        await cli.setStorageOptsEnv(disableFuseOverlayfs);
     }
 
     const DEFAULT_TAG = "latest";

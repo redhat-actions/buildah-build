@@ -37,6 +37,7 @@ These inputs apply to both containerfile and scratch builds.
 | platforms | Label the image with this platform, instead of defaulting to the host platform. Refer to [Multi arch builds](#multi-arch-builds) for more information. For multiple platforms, separate them by a comma. | None (host platform)
 | oci | Build the image using the OCI metadata format, instead of the Docker format. | `false`
 | tls-verify | Require HTTPS and verify certificates when accessing the registry. Set to `false` to skip the verification. | `true`
+| disable-fuse-overlayfs | Prevent the action from overriding the storage mount program to fuse-overlayfs. The action auto-detects kernel support for rootless native overlayfs (5.11+) and skips the override when possible, but this input can force-disable it. | `false`
 | buildah-image | Run buildah from this container image instead of the host-installed buildah. Useful for getting a newer version. For example, `quay.io/buildah/stable`. | None
 
 <a id="dockerfile-build-inputs"></a>

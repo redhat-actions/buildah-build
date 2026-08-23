@@ -89,6 +89,14 @@ inputs:
       Require HTTPS and verify certificates when accessing the registry. Defaults to true.
     required: false
     default: 'true'
+  disable-fuse-overlayfs:
+    description: |
+      Set to true to prevent the action from overriding the storage mount program to fuse-overlayfs.
+      Modern kernels (5.11+) support rootless native overlayfs, making the override unnecessary.
+      The action now auto-detects kernel support and skips the override when possible, but this
+      input can be used to force-disable the override on older kernels or self-hosted runners.
+    required: false
+    default: 'false'
   buildah-image:
     description: |
       Run buildah from this container image instead of using the host-installed buildah.

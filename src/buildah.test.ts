@@ -23,6 +23,15 @@ vi.mock("@actions/exec", () => ({
     }),
 }));
 
+const utilsMock = vi.hoisted(() => ({
+    isStorageDriverOverlay: vi.fn(),
+    findFuseOverlayfsPath: vi.fn(),
+    getFullImageName: vi.fn((image: string, tag: string) => `${image}:${tag}`),
+    kernelSupportsRootlessOverlayfs: vi.fn(),
+}));
+
+vi.mock("./utils", () => utilsMock);
+
 import { BuildahCli } from "./buildah";
 
 function setExecMock(impl: ExecImpl): void {
@@ -299,5 +308,52 @@ describe("BuildahCli non-container mode", () => {
         expect(call).toBeDefined();
         const env = (call!.options as { env?: Record<string, string> })?.env;
         expect(env?.STORAGE_OPTS).toBe("overlay.mount_program=/usr/bin/fuse-overlayfs");
+    });
+});
+
+describe("setStorageOptsEnv", () => {
+    it("skips override when disable-fuse-overlayfs input is true", async () => {
+        const cli = new BuildahCli("/usr/bin/buildah");
+        await cli.setStorageOptsEnv(true);
+
+        expect(cli.storageOptsEnv).toBe("");
+        expect(coreMock.info).toHaveBeenCalledWith("fuse-overlayfs override is disabled via input");
+    });
+
+    it("skips override when kernel supports rootless overlayfs", async () => {
+        utilsMock.kernelSupportsRootlessOverlayfs.mockReturnValue(true);
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        await cli.setStorageOptsEnv(false);
+
+        expect(cli.storageOptsEnv).toBe("");
+        expect(coreMock.info).toHaveBeenCalledWith(
+            "Kernel supports rootless native overlayfs, skipping fuse-overlayfs override"
+        );
+    });
+
+    it("sets override on old kernel when fuse-overlayfs is available", async () => {
+        utilsMock.kernelSupportsRootlessOverlayfs.mockReturnValue(false);
+        utilsMock.isStorageDriverOverlay.mockResolvedValue(true);
+        utilsMock.findFuseOverlayfsPath.mockResolvedValue("/usr/bin/fuse-overlayfs");
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        await cli.setStorageOptsEnv(false);
+
+        expect(cli.storageOptsEnv).toBe("overlay.mount_program=/usr/bin/fuse-overlayfs");
+    });
+
+    it("warns on old kernel when fuse-overlayfs is not found", async () => {
+        utilsMock.kernelSupportsRootlessOverlayfs.mockReturnValue(false);
+        utilsMock.isStorageDriverOverlay.mockResolvedValue(true);
+        utilsMock.findFuseOverlayfsPath.mockResolvedValue(undefined);
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        await cli.setStorageOptsEnv(false);
+
+        expect(cli.storageOptsEnv).toBe("");
+        expect(coreMock.warning).toHaveBeenCalledWith(
+            expect.stringContaining("fuse-overlayfs")
+        );
     });
 });
