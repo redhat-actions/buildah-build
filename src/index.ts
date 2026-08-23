@@ -138,7 +138,9 @@ export async function run(): Promise<void> {
         builtImage.push(...await doBuildFromScratch(cli, newImage, useOCI, archs, labelsList, buildahExtraArgs));
     }
 
+    let isManifest = false;
     if ((archs.length > 1) || (platforms.length > 1)) {
+        isManifest = true;
         core.info(`Creating manifest with tag${normalizedTagsList.length !== 1 ? "s" : ""} `
             + `"${normalizedTagsList.join(", ")}"`);
         const builtManifest = [];
@@ -170,9 +172,14 @@ export async function run(): Promise<void> {
         core.info(`✅ Successfully built image "${getFullImageName(normalizedImage, normalizedTagsList[0])}"`);
     }
 
-    // Get the digest of the built image
-    const inspectResult = await cli.inspect(newImage);
-    const digest = inspectResult.output.trim();
+    let digest: string;
+    if (isManifest) {
+        digest = await cli.manifestInspectDigest(newImage);
+    }
+    else {
+        const inspectResult = await cli.inspect(newImage);
+        digest = inspectResult.output.trim();
+    }
 
     core.setOutput(Outputs.IMAGE, normalizedImage);
     core.setOutput(Outputs.TAGS, tags);

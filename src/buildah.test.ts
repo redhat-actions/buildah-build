@@ -204,6 +204,64 @@ describe("BuildahCli container mode", () => {
     });
 });
 
+describe("BuildahCli digest inspection", () => {
+    it("inspect runs buildah images with digest format", async () => {
+        setExecMock((_executable, _args, options) => {
+            const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
+            listeners?.stdline?.("sha256:abc123");
+            return Promise.resolve(0);
+        });
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        const result = await cli.inspect("myimage:latest");
+
+        const call = findExecCall((c) => c.args.includes("images"));
+        expect(call).toBeDefined();
+        expect(call!.args).toEqual([ "images", "--format", "{{.Digest}}", "myimage:latest" ]);
+        expect(result.output).toContain("sha256:abc123");
+    });
+
+    it("manifestInspectDigest parses digest from manifest inspect JSON", async () => {
+        const manifestJson = JSON.stringify({
+            schemaVersion: 2,
+            mediaType: "application/vnd.oci.image.index.v1+json",
+            digest: "sha256:manifest-digest-456",
+            manifests: [],
+        });
+
+        setExecMock((_executable, _args, options) => {
+            const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
+            listeners?.stdline?.(manifestJson);
+            return Promise.resolve(0);
+        });
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        const digest = await cli.manifestInspectDigest("myimage:latest");
+
+        const call = findExecCall((c) => c.args.includes("manifest"));
+        expect(call).toBeDefined();
+        expect(call!.args).toEqual([ "manifest", "inspect", "myimage:latest" ]);
+        expect(digest).toBe("sha256:manifest-digest-456");
+    });
+
+    it("manifestInspectDigest returns empty string when digest is absent", async () => {
+        const manifestJson = JSON.stringify({
+            schemaVersion: 2,
+            manifests: [],
+        });
+
+        setExecMock((_executable, _args, options) => {
+            const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
+            listeners?.stdline?.(manifestJson);
+            return Promise.resolve(0);
+        });
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        const digest = await cli.manifestInspectDigest("myimage:latest");
+        expect(digest).toBe("");
+    });
+});
+
 describe("BuildahCli non-container mode", () => {
     it("executes buildah directly without podman wrapping", async () => {
         setExecMock(() => Promise.resolve(0));
