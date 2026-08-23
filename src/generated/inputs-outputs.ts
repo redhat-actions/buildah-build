@@ -58,6 +58,15 @@ export enum Inputs {
      */
     CONTEXT = "context",
     /**
+     * Set to true to prevent the action from overriding the storage mount program to fuse-overlayfs.
+     * Modern kernels (5.11+) support rootless native overlayfs, making the override unnecessary.
+     * The action now auto-detects kernel support and skips the override when possible, but this
+     * input can be used to force-disable the override on older kernels or self-hosted runners.
+     * Required: false
+     * Default: "false"
+     */
+    DISABLE_FUSE_OVERLAYFS = "disable-fuse-overlayfs",
+    /**
      * Alias for "containerfiles". "containerfiles" takes precedence if both are set.
      * Required: false
      * Default: None.

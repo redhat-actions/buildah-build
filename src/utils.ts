@@ -171,3 +171,14 @@ export function getFullImageName(image: string, tag: string): string {
 export function removeIllegalCharacters(item: string): string {
     return item.replace(/[^a-zA-Z0-9 ]/g, "");
 }
+
+export function kernelSupportsRootlessOverlayfs(): boolean {
+    const release = os.release();
+    const match = release.match(/^(\d+)\.(\d+)/);
+    if (!match) {
+        return false;
+    }
+    const major = parseInt(match[1], 10);
+    const minor = parseInt(match[2], 10);
+    return major > 5 || (major === 5 && minor >= 11);
+}

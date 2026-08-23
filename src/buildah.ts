@@ -6,7 +6,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import CommandResult from "./types";
-import { isStorageDriverOverlay, findFuseOverlayfsPath, getFullImageName } from "./utils";
+import { isStorageDriverOverlay, findFuseOverlayfsPath, getFullImageName, kernelSupportsRootlessOverlayfs } from "./utils";
 
 export interface BuildahConfigSettings {
     entrypoint?: string[];
@@ -105,10 +105,17 @@ export class BuildahCli implements Buildah {
         return graphRoot;
     }
 
-    // Checks for storage driver if found "overlay",
-    // then checks if "fuse-overlayfs" is installed.
-    // If yes, add mount program to use "fuse-overlayfs"
-    async setStorageOptsEnv(): Promise<void> {
+    async setStorageOptsEnv(disableFuseOverlayfs: boolean): Promise<void> {
+        if (disableFuseOverlayfs) {
+            core.info("fuse-overlayfs override is disabled via input");
+            return;
+        }
+
+        if (kernelSupportsRootlessOverlayfs()) {
+            core.info("Kernel supports rootless native overlayfs, skipping fuse-overlayfs override");
+            return;
+        }
+
         if (await isStorageDriverOverlay()) {
             const fuseOverlayfsPath = await findFuseOverlayfsPath();
             if (fuseOverlayfsPath) {
