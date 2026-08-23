@@ -1,5 +1,26 @@
 # buildah-build Changelog
 
+## v3.1.0
+
+### New Features
+- **Sequential multi-arch builds**: Add `sequential` input to run multi-arch builds one at a time instead of in parallel. Parallel remains the default, but sequential mode avoids qemu-related failures with `FROM --platform=$(BUILDPLATFORM)` stages. [#191](https://github.com/redhat-actions/buildah-build/pull/191)
+- **Disable fuse-overlayfs override**: Add `disable-fuse-overlayfs` input to prevent the action from overriding the storage mount program. The action now auto-detects kernel support for rootless native overlayfs (5.11+) and skips the fuse-overlayfs override when the kernel is new enough. This fixes silent data corruption and performance regressions on ubuntu-24.04 runners. [#193](https://github.com/redhat-actions/buildah-build/pull/193)
+
+### Bug Fixes
+- **Fix digest output for non-x86 multi-arch builds**: The digest output failed with `image not known` when the manifest only contained non-amd64 images (e.g. ppc64le, s390x). The action now uses `buildah manifest inspect` for multi-arch builds, which is architecture-agnostic. [#192](https://github.com/redhat-actions/buildah-build/pull/192)
+
+### CI & Infrastructure
+- Add workflow to rebuild bundle on Dependabot PRs. [#180](https://github.com/redhat-actions/buildah-build/pull/180)
+- Update CODEOWNERS to use @redhat-actions/maintainers. Remove repo-level SECURITY.md in favor of org-wide default.
+
+### Dependency Updates
+- Bump esbuild from 0.28.1 to 0.28.2. [#187](https://github.com/redhat-actions/buildah-build/pull/187)
+- Bump typescript-eslint from 8.65.0 to 8.67.0. [#185](https://github.com/redhat-actions/buildah-build/pull/185), [#188](https://github.com/redhat-actions/buildah-build/pull/188)
+- Bump eslint from 10.7.0 to 10.8.1. [#178](https://github.com/redhat-actions/buildah-build/pull/178), [#184](https://github.com/redhat-actions/buildah-build/pull/184)
+- Bump @types/node from 26.1.1 to 26.2.0. [#179](https://github.com/redhat-actions/buildah-build/pull/179), [#183](https://github.com/redhat-actions/buildah-build/pull/183)
+- Bump undici from 6.27.0 to 6.28.0. [#181](https://github.com/redhat-actions/buildah-build/pull/181)
+- Bump postcss from 8.5.22 to 8.5.25. [#182](https://github.com/redhat-actions/buildah-build/pull/182)
+
 ## v3.0.2
 
 ### Bug Fixes
