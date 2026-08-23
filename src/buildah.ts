@@ -34,6 +34,7 @@ interface Buildah {
     manifestAdd(manifest: string, image: string): Promise<void>;
     inspect(image: string): Promise<CommandResult>;
     inspectArch(image: string): Promise<CommandResult>;
+    manifestInspectDigest(manifest: string): Promise<string>;
 }
 
 export class BuildahCli implements Buildah {
@@ -321,6 +322,13 @@ export class BuildahCli implements Buildah {
         }
         const args: string[] = [ "inspect", "--type", "image", "--format", "{{.OCIv1.architecture}}", image ];
         return this.execute(args);
+    }
+
+    async manifestInspectDigest(manifest: string): Promise<string> {
+        const args: string[] = [ "manifest", "inspect", manifest ];
+        const result = await this.execute(args);
+        const manifestJson = JSON.parse(result.output);
+        return manifestJson.digest as string || "";
     }
 
     private static convertArrayToStringArg(args: string[]): string {
