@@ -34,7 +34,7 @@
     "@types/ini": "^4.1.1",
     "@types/node": "^26.2.0",
     "esbuild": "^0.28.2",
-    "eslint": "^10.8.1",
+    "eslint": "^10.9.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.10"
