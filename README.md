@@ -51,7 +51,6 @@ These inputs apply to both containerfile and scratch builds.
 | context | Path to directory to use as the build context. | `.`
 | build-args | Build arguments to pass to the build using `--build-arg`, if using a Containerfile that requires ARGs. Use the form `arg_name=arg_value`, and separate arguments with newlines. | None
 | layers | Set to true to cache intermediate layers during the build process. | None
-| squash | Squash all image layers into a single layer. | `true`
 | extra-args | Extra args to be passed to `buildah bud`. Separate arguments by newline. Do not use quotes. | None
 
 > \* The `containerfiles` input was previously `dockerfiles`. Refer to [this issue](https://github.com/redhat-actions/buildah-build/issues/57).
@@ -68,6 +67,7 @@ These inputs apply to both containerfile and scratch builds.
 | envs | The environment variables to be set when running the container. Separate key=value pairs by newline. | None
 | port | The port(s) to expose when running containers based on the image. Separate multiple ports by newline. | None
 | workdir | The working directory to use within the container. | None
+| squash | Squash newly added layers into a single layer. Does not affect the base image layers. | `true`
 | extra-args | Extra args to be passed to `buildah from`. Separate arguments by newline. Do not use quotes. | None
 
 <a id="image-tag-inputs"></a>

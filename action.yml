@@ -53,7 +53,7 @@ inputs:
     description: 'List of --build-args to pass to buildah'
     required: false
   squash:
-    description: 'Set to true to squash all image layers into a single layer'
+    description: 'Scratch builds only. Set to true to squash newly added layers into a single layer. Does not affect the base image layers. Has no effect on Containerfile builds.'
     default: 'true'
     required: false
   oci:

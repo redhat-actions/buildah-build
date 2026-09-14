@@ -143,7 +143,7 @@ export enum Inputs {
      */
     SEQUENTIAL = "sequential",
     /**
-     * Set to true to squash all image layers into a single layer
+     * Scratch builds only. Set to true to squash newly added layers into a single layer. Does not affect the base image layers. Has no effect on Containerfile builds.
      * Required: false
      * Default: "true"
      */
