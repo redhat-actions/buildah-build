@@ -178,7 +178,7 @@ describe("BuildahCli container mode", () => {
 
         await cli.buildUsingDocker(
             "ghcr.io/foo/bar:next", WORKSPACE, ["Containerfile"],
-            [], false, [], [], "", [], true,
+            [], false, [], [], "", [], true, false,
         );
         await cli.tag("ghcr.io/foo/bar", ["next", "abc123"]);
 
@@ -198,7 +198,7 @@ describe("BuildahCli container mode", () => {
 
         await cli.buildUsingDocker(
             "ghcr.io/foo/bar:next", WORKSPACE, ["Containerfile"],
-            [], false, [], [], "", [], true,
+            [], false, [], [], "", [], true, false,
         );
         await cli.inspect("ghcr.io/foo/bar:next");
 
@@ -268,6 +268,36 @@ describe("BuildahCli digest inspection", () => {
         const cli = new BuildahCli("/usr/bin/buildah");
         const digest = await cli.manifestInspectDigest("myimage:latest");
         expect(digest).toBe("");
+    });
+});
+
+describe("BuildahCli buildUsingDocker squash", () => {
+    it("passes --squash when squash is true", async () => {
+        setExecMock(() => Promise.resolve(0));
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        await cli.buildUsingDocker(
+            "myimage:latest", "/workspace", ["Containerfile"],
+            [], false, [], [], "", [], true, true,
+        );
+
+        const call = findExecCall((c) => c.args.includes("bud"));
+        expect(call).toBeDefined();
+        expect(call!.args).toContain("--squash");
+    });
+
+    it("does not pass --squash when squash is false", async () => {
+        setExecMock(() => Promise.resolve(0));
+
+        const cli = new BuildahCli("/usr/bin/buildah");
+        await cli.buildUsingDocker(
+            "myimage:latest", "/workspace", ["Containerfile"],
+            [], false, [], [], "", [], true, false,
+        );
+
+        const call = findExecCall((c) => c.args.includes("bud"));
+        expect(call).toBeDefined();
+        expect(call!.args).not.toContain("--squash");
     });
 });
 
