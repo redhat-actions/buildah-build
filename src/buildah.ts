@@ -22,7 +22,7 @@ interface Buildah {
     buildUsingDocker(
         image: string, context: string, containerFiles: string[], buildArgs: string[],
         useOCI: boolean, labels: string[], annotations: string[], layers: string,
-        extraArgs: string[], tlsVerify: boolean, arch?: string, platform?: string,
+        extraArgs: string[], tlsVerify: boolean, squash: boolean, arch?: string, platform?: string,
     ): Promise<CommandResult>;
     from(baseImage: string, tlsVerify: boolean, extraArgs: string[]): Promise<CommandResult>;
     config(container: string, setting: BuildahConfigSettings): Promise<CommandResult>;
@@ -147,6 +147,7 @@ export class BuildahCli implements Buildah {
         layers: string,
         extraArgs: string[],
         tlsVerify: boolean,
+        squash: boolean,
         arch?: string,
         platform?: string
     ): Promise<CommandResult> {
@@ -181,6 +182,9 @@ export class BuildahCli implements Buildah {
         args.push(`--tls-verify=${tlsVerify}`);
         if (layers) {
             args.push(`--layers=${layers}`);
+        }
+        if (squash) {
+            args.push("--squash");
         }
         if (extraArgs.length > 0) {
             args.push(...extraArgs);

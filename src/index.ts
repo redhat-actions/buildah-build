@@ -251,6 +251,7 @@ async function doBuildUsingContainerFiles(
         return workspacePath;
     });
     const layers = core.getInput(Inputs.LAYERS);
+    const squash = core.getInput(Inputs.SQUASH) === "true";
     const tlsVerify = core.getInput(Inputs.TLS_VERIFY) === "true";
 
     const builtImage: string[] = [];
@@ -276,6 +277,7 @@ async function doBuildUsingContainerFiles(
                     layers,
                     extraArgs,
                     tlsVerify,
+                    squash,
                     arch
                 );
                 await verifyImageArch(cli, imageTag, arch);
@@ -300,6 +302,7 @@ async function doBuildUsingContainerFiles(
                     layers,
                     extraArgs,
                     tlsVerify,
+                    squash,
                     undefined,
                     platform
                 );
@@ -332,6 +335,7 @@ async function doBuildUsingContainerFiles(
             layers,
             extraArgs,
             tlsVerify,
+            squash,
             archs[0],
             platforms[0]
         );
@@ -348,7 +352,8 @@ async function doBuildUsingContainerFiles(
             annotations,
             layers,
             extraArgs,
-            tlsVerify
+            tlsVerify,
+            squash
         );
         builtImage.push(newImage);
     }
