@@ -327,7 +327,7 @@ export class BuildahCli implements Buildah {
             const args: string[] = [ "image", "inspect", "--format", "{{.Architecture}}", image ];
             return this.execute(args);
         }
-        const args: string[] = [ "inspect", "--type", "image", "--format", "{{.OCIv1.architecture}}", image ];
+        const args: string[] = [ "inspect", "--type", "image", "--format", "{{.OCIv1.Architecture}}", image ];
         return this.execute(args);
     }
 
