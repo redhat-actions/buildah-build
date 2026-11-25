@@ -6,7 +6,48 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import CommandResult from "./types";
-import { isStorageDriverOverlay, findFuseOverlayfsPath, getFullImageName, kernelSupportsRootlessOverlayfs } from "./utils";
+import { SemVer, isStorageDriverOverlay, findFuseOverlayfsPath, getFullImageName, kernelSupportsRootlessOverlayfs } from "./utils";
+
+/** Min versions required for annotating image index */
+export const MIN_INDEX_ANNOTATIONS_BUILDAH = new SemVer(1, 35, 0);
+export const MIN_INDEX_ANNOTATIONS_PODMAN = new SemVer(5, 0, 0);
+
+export enum CliKind {
+    Buildah = "Buildah",
+    Podman = "Podman",
+}
+
+function cliMinRequiredVersionIndexAnnotations(cli: CliKind): SemVer {
+    switch (cli) {
+    case CliKind.Buildah: return MIN_INDEX_ANNOTATIONS_BUILDAH;
+    case CliKind.Podman: return MIN_INDEX_ANNOTATIONS_PODMAN;
+    default: throw Error("Internal error: CliKind variant is not handled in cliMinRequiredVersionIndexAnnotations()");
+    }
+}
+
+/**
+ * Describes version information and available features based of the underlying CLI
+ *
+ * In addition to `cli` and `version` this data class contains list of features that are unavailable due to lacking support
+ * by the underlying CLI utility.
+ */
+export class CliVersion {
+    constructor(
+        /** Name of the CLI used */
+        public readonly cli: CliKind,
+        /** CLI version */
+        public readonly version: SemVer,
+    ) {}
+
+    /** Returns error if annotations are not supported for index images in this version */
+    indexImageAnnotationsError(): string | null {
+        const required = cliMinRequiredVersionIndexAnnotations(this.cli);
+        if (this.version.compare(required) < 0) {
+            return `Annotations were requested, but ${this.cli} ${this.version} does not support annotations on the image index (requires >= ${required}). Update ${this.cli}, or set buildah-image: quay.io/buildah/stable, which ships a supported version`;
+        }
+        return null;
+    }
+}
 
 export interface BuildahConfigSettings {
     entrypoint?: string[];
@@ -30,11 +71,12 @@ interface Buildah {
     commit(container: string, newImageName: string, useOCI: boolean, squash: boolean): Promise<CommandResult>;
     tag(imageName: string, tags: string[]): Promise<void>;
     manifestRm(manifest: string): Promise<void>;
-    manifestCreate(manifest: string): Promise<void>;
+    manifestCreate(manifest: string, useOCI: boolean, annotations: string[]): Promise<void>;
     manifestAdd(manifest: string, image: string): Promise<void>;
     inspect(image: string): Promise<CommandResult>;
     inspectArch(image: string): Promise<CommandResult>;
     manifestInspectDigest(manifest: string): Promise<string>;
+    version(): Promise<CliVersion | null>;
 }
 
 export class BuildahCli implements Buildah {
@@ -302,8 +344,14 @@ export class BuildahCli implements Buildah {
         await this.execute(args, execOptions);
     }
 
-    async manifestCreate(manifest: string): Promise<void> {
+    async manifestCreate(manifest: string, useOCI: boolean, annotations: string[]): Promise<void> {
         const args: string[] = [ "manifest", "create" ];
+        if (useOCI) {
+            annotations.forEach((annotation) => {
+                args.push("--annotation");
+                args.push(annotation);
+            });
+        }
         args.push(manifest);
         core.info(`Creating manifest ${manifest}`);
         await this.execute(args);
@@ -336,6 +384,18 @@ export class BuildahCli implements Buildah {
         const result = await this.execute(args);
         const manifestJson = JSON.parse(result.output);
         return manifestJson.digest as string || "";
+    }
+
+    async version(): Promise<CliVersion | null> {
+        const output = await this.execute([ "version" ], { group: true });
+        // Note: This is always client version (which is most of the time sufficient) but in advanced cases user might
+        // have server setup with its own version
+        const version = SemVer.parse(output.output);
+        const cli = this.usePodman ? CliKind.Podman : CliKind.Buildah;
+        if (version != null) {
+            return new CliVersion(cli, version);
+        }
+        return null;
     }
 
     private static convertArrayToStringArg(args: string[]): string {

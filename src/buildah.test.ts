@@ -30,9 +30,16 @@ const utilsMock = vi.hoisted(() => ({
     kernelSupportsRootlessOverlayfs: vi.fn(),
 }));
 
-vi.mock("./utils", () => utilsMock);
+vi.mock("./utils", async (importOriginal) => {
+    const real = await importOriginal<typeof import("./utils")>();
+    return {
+        ...real,
+        ...utilsMock,
+    };
+});
 
-import { BuildahCli } from "./buildah";
+import { SemVer } from "./utils";
+import { CliKind, CliVersion, BuildahCli } from "./buildah";
 
 function setExecMock(impl: ExecImpl): void {
     execMockImpl = impl;
@@ -355,5 +362,118 @@ describe("setStorageOptsEnv", () => {
         expect(coreMock.warning).toHaveBeenCalledWith(
             expect.stringContaining("fuse-overlayfs")
         );
+    });
+});
+
+describe("buildahCliManifestCreation", () => {
+    const annotations: string[] = [ "flag=true", "name=value" ];
+    const cli = new BuildahCli("/usr/bin/buildah");
+    it("should supply annotations for OCI multi-arch index image", async () => {
+        const manifestName = "test-image";
+        await cli.manifestCreate(manifestName, true, annotations);
+        expect(execCallLog.length).toBe(1);
+        const lastRun = execCallLog[0];
+        expect(lastRun).toBeDefined();
+        const expected = [
+            "manifest", "create",
+            "--annotation", "flag=true",
+            "--annotation", "name=value",
+            manifestName
+        ];
+        expect(lastRun.args).toStrictEqual(expected);
+    });
+
+    it("should not supply annotations for non-OCI multi-arch index image", async () => {
+        const manifestName = "test-image";
+        await cli.manifestCreate(manifestName, false, annotations);
+        expect(execCallLog.length).toBe(1);
+        const lastRun = execCallLog[0];
+        expect(lastRun).toBeDefined();
+        expect(lastRun.args).toStrictEqual(["manifest", "create", manifestName]);
+    });
+
+    it("should not supply annotations for OCI multi-arch index image with empty input", async () => {
+        const manifestName = "test-image";
+        await cli.manifestCreate(manifestName, true, []);
+        expect(execCallLog.length).toBe(1);
+        const lastRun = execCallLog[0];
+        expect(lastRun).toBeDefined();
+        expect(lastRun.args).toStrictEqual(["manifest", "create", manifestName]);
+    });
+});
+
+describe("buildahVersionFeatureGating", () => {
+    it("should correctly determine buildah version", async () => {
+        const cli = new BuildahCli("/usr/bin/buildah");
+        setExecMock((_executable, _args, options) => {
+            const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
+            listeners?.stdline?.(`
+                Version:         1.46.1
+                Go Version:      go1.27.3-X:nodwarf5
+            `);
+            return Promise.resolve(0);
+        });
+        const result = await cli.version();
+        expect(result?.cli).toBe(CliKind.Buildah);
+        expect(result?.version).toStrictEqual(new SemVer(1, 46, 1));
+    });
+
+    it("should correctly determine podman version", async () => {
+        const cli = new BuildahCli("/usr/bin/podman", true);
+        setExecMock((_executable, _args, options) => {
+            const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
+            listeners?.stdline?.(`
+                Client:        Podman Engine
+                Version:       6.2.0
+                API Version:   6.2.0
+            `);
+            return Promise.resolve(0);
+        });
+        const result = await cli.version();
+        expect(result?.cli).toBe(CliKind.Podman);
+        expect(result?.version).toStrictEqual(new SemVer(6, 2, 0));
+    });
+
+    it("should fail to parse unknown version", async () => {
+        setExecMock((_executable, _args, options) => {
+            const listeners = (options as { listeners?: { stdline?: (line: string) => void } })?.listeners;
+            listeners?.stdline?.(`
+                Client Version: 6.2.0
+                Server Version: 6.2.0
+            `);
+            return Promise.resolve(0);
+        });
+        const podman = new BuildahCli("/usr/bin/podman", true);
+        expect(await podman.version()).toBeNull();
+        const buildah = new BuildahCli("/usr/bin/buildah");
+        expect(await buildah.version()).toBeNull();
+    });
+
+    it("should correctly detect annotations support for buildah cli", async () => {
+        const unsupported = new SemVer(1, 34, 0);
+        const unsupportedError = "Annotations were requested, but Buildah 1.34.0 does not support annotations on the image index (requires >= 1.35.0). Update Buildah, or set buildah-image: quay.io/buildah/stable, which ships a supported version";
+        const supported = new SemVer(1, 35, 0);
+        const newMajor = new SemVer(2, 0, 0);
+
+        let result = (new CliVersion(CliKind.Buildah, unsupported)).indexImageAnnotationsError();
+        expect(result).toStrictEqual(unsupportedError);
+        result = (new CliVersion(CliKind.Buildah, supported)).indexImageAnnotationsError();
+        expect(result).toBeNull();
+        result = (new CliVersion(CliKind.Buildah, newMajor)).indexImageAnnotationsError();
+        expect(result).toBeNull();
+    });
+
+    it("should correctly detect annotations support for podman cli", async () => {
+        const unsupported = new SemVer(4, 0, 1);
+        const unsupportedError = "Annotations were requested, but Podman 4.0.1 does not support annotations on the image index (requires >= 5.0.0). Update Podman, or set buildah-image: quay.io/buildah/stable, which ships a supported version";
+        const supported = new SemVer(5, 0, 0);
+        const newMajor = new SemVer(6, 1, 0);
+
+        let result = (new CliVersion(CliKind.Podman, unsupported)).indexImageAnnotationsError();
+        expect(result).toStrictEqual(unsupportedError);
+        result = (new CliVersion(CliKind.Podman, supported)).indexImageAnnotationsError();
+        expect(result).toBeNull();
+        result = (new CliVersion(CliKind.Podman, newMajor)).indexImageAnnotationsError();
+        expect(result).toBeNull();
     });
 });

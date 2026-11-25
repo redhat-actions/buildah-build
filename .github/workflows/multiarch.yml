@@ -136,6 +136,135 @@ jobs:
         run: |
           podman run --rm ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }}
 
+  build-multiplatform-containerfile-ubuntu-24-negative:
+    name: Build+annotate multi-platform image using Containerfile (ubuntu-24)
+    env:
+      IMAGE_NAME: hello-world-multiplatform-annotations-negative
+    runs-on: ubuntu-24.04
+
+    steps:
+
+      # Checkout buildah action github repository
+      - name: Checkout Buildah action
+        uses: actions/checkout@v7
+        with:
+          path: "buildah-build"
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-binfmt
+
+      - name: Create Containerfile
+        run: |
+          cat > Containerfile<<EOF
+
+          FROM docker.io/alpine:3.16
+
+          RUN echo "hello world"
+
+          ENTRYPOINT [ "sh", "-c", "echo -n 'Machine: ' && uname -m && echo -n 'Bits: ' && getconf LONG_BIT && echo 'goodbye world'" ]
+          EOF
+
+      - name: Build Image
+        id: build_image_multiplatform
+        uses: ./buildah-build/
+        continue-on-error: true
+        with:
+          annotations: org.opencontainers.image.title=${{ github.event.repository.name }}
+          oci: true
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAG }}
+          platforms: linux/amd64, linux/ppc64le
+          containerfiles: |
+            ./Containerfile
+
+      - name: Should ensure build_image_multiplatform failed
+        if: always() && steps.build_image_multiplatform.outcome != 'failure'
+        run: |
+          echo "Build multi-arch image with annotations should fail on Ubuntu-24"
+          exit 1
+
+      - name: Should ensure build_image_multiplatform error message is correct
+        if: always() && steps.build_image_multiplatform.outcome == 'failure'
+        run: |
+          actual="${{ steps.my-ts-action.outputs.error-message }}"
+          expected_reason="does not support annotations on the image index (requires >= 1.35.0)"
+
+          if printf "%s\n" "$actual" | grep -q "$expected_reason"; then
+            echo "✅ Found expected error in error message"
+          else
+            echo "❌ Expected error reason not found"
+            echo "Looking for: $expected_reason"
+            echo "Actual message: $actual"
+            exit 1
+          fi
+
+  build-multiplatform-containerfile-ubuntu-26:
+    name: Build+annotate multi-platform image using Containerfile (ubuntu-26)
+    env:
+      IMAGE_NAME: hello-world-multiplatform-annotations
+    runs-on: ubuntu-26.04
+
+    steps:
+
+      # Checkout buildah action github repository
+      - name: Checkout Buildah action
+        uses: actions/checkout@v7
+        with:
+          path: "buildah-build"
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-binfmt
+
+      - name: Create Containerfile
+        run: |
+          cat > Containerfile<<EOF
+
+          FROM docker.io/alpine:3.16
+
+          RUN echo "hello world"
+
+          ENTRYPOINT [ "sh", "-c", "echo -n 'Machine: ' && uname -m && echo -n 'Bits: ' && getconf LONG_BIT && echo 'goodbye world'" ]
+          EOF
+
+      - name: Build Image
+        id: build_image_multiplatform
+        uses: ./buildah-build/
+        with:
+          annotations: org.opencontainers.image.title=${{ github.event.repository.name }}
+          oci: true
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAG }}
+          platforms: linux/amd64, linux/ppc64le
+          containerfiles: |
+            ./Containerfile
+
+      - name: Echo Outputs
+        run: |
+          echo "Image: ${{ steps.build_image_multiplatform.outputs.image }}"
+          echo "Tags: ${{ steps.build_image_multiplatform.outputs.tags }}"
+          echo "Tagged Image: ${{ steps.build_image_multiplatform.outputs.image-with-tag }}"
+
+      - name: Check images created
+        run: buildah images | grep '${{ env.IMAGE_NAME }}'
+
+      - name: Check index image manifest
+        env:
+          MANIFEST: ${{ runner.temp }}/${{ steps.build_image_multiplatform.outputs.image }}-manifest.json
+        run: |
+          set -x
+          buildah manifest inspect ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }} > $MANIFEST
+          jq -e '.mediaType == "application/vnd.oci.image.index.v1+json"' $MANIFEST
+          jq -e 'has("annotations")' $MANIFEST
+          jq -e '.annotations["org.opencontainers.image.title"] == "${{ github.event.repository.name }}"' $MANIFEST
+
+      - name: Run image
+        run: |
+          podman run --rm ${{ steps.build_image_multiplatform.outputs.image }}:${{ env.IMAGE_TAG }}
+
   build-multiarch-scratch:
     name: Build multi-architecture image from scratch
     env:

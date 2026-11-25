@@ -12,7 +12,7 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "compile": "tsc -p .",
+    "compile": "tsc -p . --ignoreDeprecations 6.0",
     "bundle": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --sourcemap --minify",
     "clean": "rm -rf out/ dist/",
     "lint": "eslint . --max-warnings=0",
