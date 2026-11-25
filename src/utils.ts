@@ -182,3 +182,45 @@ export function kernelSupportsRootlessOverlayfs(): boolean {
     const minor = parseInt(match[2], 10);
     return major > 5 || (major === 5 && minor >= 11);
 }
+
+/**
+ * Minimal semver representation
+ */
+export class SemVer {
+    constructor(public readonly major: number, public readonly minor: number, public readonly patch: number) {}
+    /**
+     * Extracts a semantic version from a multi-line output containing line start starts as `Version:`
+     * Returns `null` if no valid version is found.
+     */
+    static parse(script: string): SemVer | null {
+        const match = script.match(/^\s*Version:\s*(\d+)\.(\d+)\.(\d+)/im);
+
+        if (!match) {
+            return null;
+        }
+
+        return new SemVer(
+            parseInt(match[1], 10),
+            parseInt(match[2], 10),
+            parseInt(match[3], 10),
+        );
+    }
+
+    ///Returns -1 if this < other, 0 if equal, 1 if this > other
+    compare(other: SemVer): number {
+        if (this.major !== other.major) {
+            return this.major < other.major ? -1 : 1;
+        }
+        if (this.minor !== other.minor) {
+            return this.minor < other.minor ? -1 : 1;
+        }
+        if (this.patch !== other.patch) {
+            return this.patch < other.patch ? -1 : 1;
+        }
+        return 0;
+    }
+
+    toString(): string {
+        return `${this.major}.${this.minor}.${this.patch}`;
+    }
+}

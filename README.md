@@ -194,6 +194,9 @@ jobs:
         port: 8080
 ```
 
+**NOTE**: Scratch builds require `buildah` to be available and lack support for OCI `annotations` when building individual images,
+only multi arch index image shall support `annotations`.
+
 <a id="multi-arch-builds"></a>
 
 ## Multi arch builds
@@ -227,6 +230,14 @@ When building for multiple architectures, each architecture is built in parallel
 If multiple tags are provided, multiple equivalent manifests will be created with the given tags.
 
 [`push-to-registry`](https://github.com/redhat-actions/push-to-registry) action can be used to push the generated image manifest.
+
+### Output
+
+In addition to creating image per platform/architecture, action shall produce image index manifest.
+Which shall describe all images with corresponding platform/architecture and group the resulting images under itself when uploading to the registry.
+
+Multi-arch builds with oci: true and annotations require buildah >= 1.35, or podman >= 5.0 when using the podman fallback;
+the action fails fast otherwise.
 
 ## Using a containerized buildah
 

@@ -38,6 +38,7 @@ jobs:
         id: build_image
         uses: ./buildah-build/
         with:
+          annotations: org.opencontainers.image.title=${{ github.event.repository.name }}
           image: ${{ env.IMAGE_NAME }}
           layers: false
           tags: 'latest ${{ github.sha }}'

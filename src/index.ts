@@ -47,7 +47,7 @@ export async function run(): Promise<void> {
     }
 
     // print version
-    await cli.execute([ "version" ], { group: true });
+    const cliVersion = await cli.version();
 
     // Check if fuse-overlayfs exists and find the storage driver
     if (!usePodman && !buildahImage) {
@@ -112,6 +112,17 @@ export async function run(): Promise<void> {
 
     if ((archs.length > 0) && (platforms.length > 0)) {
         throw new Error("The --platform option may not be used in combination with the --arch option.");
+    } else if ((archs.length > 1) || (platforms.length > 1) && useOCI && annotationsList.length > 0) {
+        //If user requested more than one platform/arch, then make sure we can support annotations
+        if (cliVersion == null) {
+            throw new Error(
+                "Annotations were requested for a multi-arch image index, but the CLI version could not be determined..."
+            );
+        }
+        const err = cliVersion.indexImageAnnotationsError();
+        if (err != null) {
+            throw new Error(err);
+        }
     }
 
     const sequential = core.getInput(Inputs.SEQUENTIAL) === "true";
@@ -151,7 +162,7 @@ export async function run(): Promise<void> {
             const manifestName = getFullImageName(normalizedImage, tag);
             // Force-remove existing manifest to prevent errors on recurring build on the same machine
             await cli.manifestRm(manifestName);
-            await cli.manifestCreate(manifestName);
+            await cli.manifestCreate(manifestName, useOCI, annotationsList);
             builtManifest.push(manifestName);
 
             for (const arch of archs) {
@@ -416,4 +427,12 @@ async function doBuildFromScratch(
     return builtImage;
 }
 
-run().catch(core.setFailed);
+run().catch((reason: string | Error) => {
+    if (reason instanceof Error) {
+        core.setOutput('error-message', reason.message);
+        core.setOutput('error-stack', reason.stack ?? '');
+    } else {
+        core.setOutput('error-message', reason);
+    }
+    core.setFailed(reason);
+});

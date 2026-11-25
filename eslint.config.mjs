@@ -51,6 +51,10 @@ export default tseslint.config(
             "@typescript-eslint/no-unsafe-return": "off",
             "@typescript-eslint/restrict-template-expressions": "off",
             "@typescript-eslint/no-base-to-string": "off",
+
+            // Ensure consistent style
+            "semi": ["error", "always"],
+            "indent": ["error", 4],
         },
     },
 );
